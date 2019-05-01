@@ -1,0 +1,14 @@
+*.swp
+.config/mpd/playlists
+.config/mpd/database
+.config/mpd/log
+.config/mpd/pid
+.config/mpd/state
+.config/mpd/sticker.sql
+.ncmpcpp/error.log
+.config/ranger
+bookmarks
+.gitconfig
+plug.vim
+.netrwhist
+.gen/

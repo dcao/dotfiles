@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+if ! tmux list-sessions; then
+    # Case 1: no sessions
+    name=$(rofi -dmenu -l 0 -p "tmux new" -mesg "no sessions launched")
+    if [ -n "$name" ]; then
+        st -e tmux new-session -s "$name"
+    else
+        st -e tmux new-session
+    fi
+else
+    # Case 2: sessions
+    name=$(tmux list-sessions -F "#{session_name}" | rofi -dmenu -l 5 -p "tmux new/attach")
+    st -e tmux new-session -A -s "$name"
+fi

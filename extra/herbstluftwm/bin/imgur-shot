@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+maim -s /tmp/screenshot.png && imgur.sh /tmp/screenshot.png | xclip -selection clipboard
+
+notify-send -u low "imgur-shot" "screen shot."

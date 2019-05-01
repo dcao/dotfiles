@@ -1,0 +1,3 @@
+PASSWORD_STORE_DIR='/home/david/default/pass/'
+USERNAME_field='login'
+password_length=32

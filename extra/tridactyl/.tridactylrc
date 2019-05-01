@@ -1,0 +1,34 @@
+bind go current_url open
+bind O fillcmdline tabopen
+bind J tabnext
+bind K tabprev
+bind j scrollline 1.5
+bind k scrollline -1.5
+bind l scrollpx 40
+bind h scrollpx -40
+bind gt fillcmdline buffer
+bind gT fillcmdline bufferall
+
+unbind <F1>
+
+keymap n <C-g>
+keymap N <C-G>
+
+bind gr source
+bind gR restart
+
+set hintchars asdfghjkl
+
+set searchurls.ddg https://duckduckgo.com/?q=%s
+set searchurls.aur https://aur.archlinux.org/packages/?O=0&PP=250&K=%s
+set searchurls.awi https://wiki.archlinux.org/?search=%s
+set searchurls.yt https://youtube.com/results?search_query=%s
+set searchurls.msr https://musicbrainz.org/search?query=%s&type=release&method=indexed
+set searchurls.msa https://musicbrainz.org/search?query=%s&type=artist&method=indexed
+set searchurls.gh https://github.com/search?q=%s
+set searchurls.wa https://wolframalpha.com/input/?i=%s
+set searchurls.hoog https://hoogle.haskell.org/?hoogle=%s
+set searchurls.hkg https://hackage.haskell.org/packages/search?terms=%s
+set searchurls.crs https://crates.io/search?q=%s
+
+fixamo_quiet

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+TAG_NAME=$(herbstclient attr tags.focus.name)
+TAG_INDEX=$(expr $(herbstclient attr tags.focus.index) + 1)
+rofi -dmenu -p "rename [${TAG_INDEX}] ${TAG_NAME}" -l 0 | xargs herbstclient rename ${TAG_NAME}
