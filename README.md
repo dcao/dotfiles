@@ -1,8 +1,8 @@
 # dotfiles
 
-david's dotfiles, powered by nix
+david's dotfiles, powered by nix(os)
 
-note: previous history available at [Gitlab](https://gitlab.com/dcao/dotfiles)
+note: this repo completely clears the commit history; previous history is available at [Gitlab](https://gitlab.com/dcao/dotfiles)
 
 ## installation
 
