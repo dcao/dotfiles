@@ -2,7 +2,7 @@
 
 david's dotfiles, powered by nix
 
-note: previous history available at [https://gitlab.com/dcao/dotfiles](Gitlab)
+note: previous history available at [Gitlab](https://gitlab.com/dcao/dotfiles)
 
 ## installation
 
