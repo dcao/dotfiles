@@ -11,7 +11,7 @@ stdenv.mkDerivation {
     owner = "olive-editor";
     repo = "olive";
     rev = "c5f63ec2c5511e4af0f4a5a839dbfd995bd77fd4";
-    sha256 = "1nzig5flbc1h88cjrfcf296g19m7fchp7jmx8m1nzjkzhlx6297d";
+    sha256 = "10g4725sqvsbrbxv9rjmw3pmx1hwxhk1fvlh2s09qldmmj7azz5g";
   };
 
   nativeBuildInputs = [

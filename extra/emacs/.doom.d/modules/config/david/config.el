@@ -190,6 +190,20 @@
 (after! calc
   (setq calc-algebraic-mode t))
 
+(defun cao/calendar ()
+  "Activate (or switch to) `calendar' in its workspace."
+  (interactive)
+  (if (featurep! :ui workspaces)
+      (progn
+        (+workspace-switch "Calendar" t)
+        (doom/open-scratch-buffer t)
+        (+calendar/open-calendar)
+        (+workspace/display))
+    (setq +calendar--wconf (current-window-configuration))
+    (delete-other-windows)
+    (doom/open-scratch-buffer t)
+    (+calendar/open-calendar)))
+
 ;;
 ;; Bindings
 ;;
@@ -202,8 +216,9 @@
         :desc "Find file"               :n "f" #'find-file
         :desc "rg project"              :n "z" #'helm-projectile-rg
         :desc "Org dir"                 :n "o" (lambda () (interactive) (helm-find-files-1 cao/org-root)))
-      (:desc "quickies" :prefix "o"
+      (:desc "org" :prefix "o"
         :desc "Capture"    :n "c" #'org-capture
+        :desc "Calendar"   :n "C" #'cao/calendar
         :desc "Mail"       :n "m" #'notmuch
         :desc "journal"    :n "j" #'org-journal-new-entry
         :desc "Org dir"    :n "f" (lambda () (interactive) (helm-find-files-1 cao/org-root))

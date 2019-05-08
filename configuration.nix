@@ -146,6 +146,7 @@
       roboto
       libre-baskerville
       emacs-all-the-icons-fonts
+      fira
     ];
     fontconfig = {
       defaultFonts = {

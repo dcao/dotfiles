@@ -7,6 +7,8 @@ let
   dots = "/home/david/.files";
   extra = "${dots}/extra";
   browser = "qutebrowser";
+  waylandUrl = "https://github.com/colemickens/nixpkgs-wayland/archive/master.tar.gz";
+  waylandOverlay = (import (builtins.fetchTarball waylandUrl));
   colors = import ./cfg/colors;
 
 in
@@ -16,6 +18,7 @@ rec {
     config.allowUnfree = true;
     overlays = [
       (import ./overlays/dcao.nix)
+      waylandOverlay
     ];
   };
 
@@ -108,7 +111,8 @@ rec {
       blueman spotify nix-prefetch-github
       olive-editor youtube-dl steam mako jq
       imgur-sh grim slurp wl-clipboard fzf
-      hugo pandoc ffmpeg fava tinycc ipe
+      hugo pandoc ffmpeg fava ipe anki
+      redshift-wayland torbrowser scribus
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
