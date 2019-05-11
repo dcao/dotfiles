@@ -117,7 +117,7 @@ rec {
       imgur-sh grim slurp wl-clipboard fzf
       hugo pandoc ffmpeg fava ipe anki
       redshift-wayland torbrowser scribus
-      neofetch
+      neofetch imagemagick
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
