@@ -36,7 +36,6 @@
     
     window > box {
         margin: 16px 16px 0px 16px;
-        background: #231f20;
         color: #ffffff;
     }
     

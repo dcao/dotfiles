@@ -91,6 +91,7 @@
         org-expiry-inactive-timestamps t
         org-default-priority ?C
         org-lowest-priority ?D
+        org-catch-invisible-edits 'show-and-error
         ;; refile
         org-refile-targets '((org-agenda-files :maxlevel . 3))
         org-refile-use-outline-path 'file

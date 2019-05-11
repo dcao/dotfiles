@@ -102,17 +102,22 @@ rec {
     "waybar/styles.css".text = ((import ./cfg/waybar.nix) {}).styles;
   };
 
+  xdg.dataFile = {
+    "fonts".source = "${config.home.homeDirectory}/default/fonts";
+  };
+
   home = {
     packages = with pkgs; [
       qutebrowser rofi-pass ripgrep ncmpcpp
-      pavucontrol pass discord xdg-user-dirs
-      sxiv cmst libreoffice libnotify
+      pavucontrol pass xdg-user-dirs
+      sxiv cmst libreoffice discord libnotify
       ranger qbittorrent aspell darktable mpv
       blueman spotify nix-prefetch-github
       olive-editor youtube-dl steam mako jq
       imgur-sh grim slurp wl-clipboard fzf
       hugo pandoc ffmpeg fava ipe anki
       redshift-wayland torbrowser scribus
+      neofetch
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
@@ -257,7 +262,7 @@ rec {
         completion-highlight-bg = "#83a598";
         recolor-lightcolor = "#282828";
         recolor-darkcolor = "#ebdbb2";
-        recolor = "false";
+        recolor = "true";
         recolor-keephue = "false";
       };
     };
