@@ -7,12 +7,7 @@ stdenv.mkDerivation {
   name = "olive-editor";
   version = "unstable-2019-05-10";
 
-  src = fetchFromGitHub {
-    owner = "olive-editor";
-    repo = "olive";
-    rev = "7985cc48d4690dbc12cdb619bbc501d139ec2bac";
-    sha256 = "0p7qxdrp0ba0a8mlh5n7p8c32577b0mch5n5r5sz5sqkfp8p1847";
-  };
+  src = fetchFromGitHub (import ./metadata.nix);
 
   nativeBuildInputs = [
     pkgconfig

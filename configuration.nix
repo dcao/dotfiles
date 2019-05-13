@@ -85,7 +85,7 @@
     neovim emacs
 
     # misc
-    gnupg bashmount light
+    gnupg bashmount light xdg_utils
   ];
 
   programs.fish.enable = true;

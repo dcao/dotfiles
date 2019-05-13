@@ -2,8 +2,6 @@
 ;; Copy me to ~/.doom.d/init.el or ~/.config/doom/init.el, then edit me!
 
 
-(add-to-list 'custom-theme-load-path (expand-file-name (concat doom-private-dir "modules/config/david/")))
-
 (doom! :completion
        company           ; the ultimate code completion backend
        (helm +fuzzy)     ; the *other* search engine for love and life
@@ -158,5 +156,4 @@
        ;; The default module sets reasonable defaults for Emacs. It also
        ;; provides a Spacemacs-inspired keybinding scheme and a smartparens
        ;; config. Use it as a reference for your own modules.
-       (default +bindings +smartparens)
-       david)
+       (default +bindings +smartparens))

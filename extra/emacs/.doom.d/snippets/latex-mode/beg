@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: begin-env
+# key: beg
+# --
+\begin{$1}
+    $0
+\end
