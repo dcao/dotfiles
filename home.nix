@@ -86,6 +86,30 @@ rec {
         };
         msmtp.enable = true;
       };
+
+      ucsd = {
+        address = "dmcao@ucsd.edu";
+        userName = "dmcao@ucsd.edu";
+        realName = "David Cao";
+        passwordCommand = "pass 'Root/TritonLink' | head -1";
+
+        gpg = {
+          key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
+        };
+
+        flavor = "gmail.com";
+
+        notmuch.enable = true;
+        mbsync = {
+          enable = true;
+          patterns = [ "INBOX" ];
+        };
+        astroid = {
+          enable = true;
+          sendMailCommand = "msmtp --read-envelope-from --read-recipients";
+        };
+        msmtp.enable = true;
+      };
     };
   };
 
@@ -117,7 +141,8 @@ rec {
       imgur-sh grim slurp wl-clipboard fzf
       hugo pandoc ffmpeg fava ipe anki
       redshift-wayland torbrowser scribus
-      neofetch imagemagick
+      neofetch imagemagick arduino keybase-gui
+      exa
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
@@ -372,8 +397,8 @@ rec {
         bind -T copy-mode-vi 'Bspace' send -X halfpage-up
          
         # extra commands for interacting with the ICCCM clipboard
-        bind C-c run "tmux save-buffer - | xclip -i -sel clipboard"
-        bind C-v run "tmux set-buffer \"$(xclip -o -sel clipboard)\"; tmux paste-buffer"
+        bind C-c run "tmux save-buffer - | wl-copy"
+        bind C-v run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer"
          
         # easy-to-remember split pane commands
         bind \ split-window -h

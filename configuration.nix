@@ -106,6 +106,9 @@
     coreOffset = "-85";
   };
 
+  services.keybase.enable = true;
+  services.kbfs.enable = true;
+
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   programs.ssh.startAgent = true;
@@ -142,6 +145,7 @@
     enableDefaultFonts = true;
     fonts = with pkgs; [
       iosevka
+      mplus-outline-fonts
       siji
       roboto
       libre-baskerville

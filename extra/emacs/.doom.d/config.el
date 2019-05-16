@@ -19,6 +19,12 @@
 ;; Config
 ;;
 
+(after! cc-mode
+  (c-add-style
+   "dcao"
+   '((c-basic-offset . 4)))
+  (setq c-default-style "dcao"))
+
 ;; Rust
 (after! lsp-mode
   (add-to-list 'flycheck-disabled-checkers 'rust-cargo)
