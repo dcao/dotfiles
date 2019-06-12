@@ -4,6 +4,7 @@
 # We assume that the dotfiles dir already exists
 # Otherwise how did you get this config file?
 let
+  updateDoom = ".emacs.d/bin/doom -y re";
   dots = "/home/david/.files";
   extra = "${dots}/extra";
   browser = "qutebrowser";
@@ -142,7 +143,8 @@ rec {
       hugo pandoc ffmpeg fava ipe anki
       redshift-wayland torbrowser scribus
       neofetch imagemagick arduino keybase-gui
-      exa
+      exa firefox sbcl cabal2nix lightworks
+      woeusb nix-prefetch-git vgo2nix aerc
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
@@ -162,7 +164,10 @@ rec {
       ".ncmpcpp/config".source = "${extra}/ncmpcpp/config";
       "bin/sway_rename.sh".source = "${extra}/sway/sway_rename.sh";
 
-      ".doom.d".source = "${extra}/emacs/.doom.d";
+      ".doom.d" = {
+        source = "${extra}/emacs/.doom.d";
+        onChange = updateDoom;
+      };
       qutebrowser = { source = "${extra}/qutebrowser"; target = "."; recursive = true; };
       ranger = { source = "${extra}/ranger"; target = "."; recursive = true; };
       rofi = { source = "${extra}/rofi"; target = "."; recursive = true; };
@@ -205,6 +210,7 @@ rec {
         r = "~/.files/.rice/r";
         musdl = "youtube-dl -i --extract-audio --audio-format mp3 --audio-quality 0";
         startx = "startx ~/.xinitrc";
+        ea = "exa -la";
       };
     };
 
@@ -228,6 +234,7 @@ rec {
       hooks = {
         preNew = "mbsync --all";
       };
+      search.excludeTags = [ "deleted" "spam" "muted" ];
     };
 
     msmtp = {
@@ -289,66 +296,6 @@ rec {
         recolor-darkcolor = "#ebdbb2";
         recolor = "true";
         recolor-keephue = "false";
-      };
-    };
-
-    alacritty = {
-      enable = true;
-      settings = {
-        window.padding = {
-          x = 16;
-          y = 16;
-        };
-
-        tabspaces = 4;
-        # This is for X11; in sway, the font size has to be amped up
-        # font.size = 9.0;
-        font.size = 14.0;
-
-        colors = {
-          primary = {
-            background = "0x${colors.base00}";
-            foreground = "0x${colors.base05}";
-          };
-
-          cursor = {
-            text = "0x${colors.base00}";
-            cursor = "0x${colors.base05}";
-          };
-
-          # Normal colors
-          normal = {
-            black = "0x${colors.base00}";
-            red = "0x${colors.base08}";
-            green = "0x${colors.base0B}";
-            yellow = "0x${colors.base0A}";
-            blue = "0x${colors.base0D}";
-            magenta = "0x${colors.base0E}";
-            cyan = "0x${colors.base0C}";
-            white = "0x${colors.base05}";
-          };
-
-          # Bright colors
-          bright = {
-            black = "0x${colors.base00}";
-            red = "0x${colors.base08}";
-            green = "0x${colors.base0B}";
-            yellow = "0x${colors.base0A}";
-            blue = "0x${colors.base0D}";
-            magenta = "0x${colors.base0E}";
-            cyan = "0x${colors.base0C}";
-            white = "0x${colors.base05}";
-          };
-
-          indexed_colors = [
-            { index = 16; color = "0x${colors.base09}"; }
-            { index = 17; color = "0x${colors.base0F}"; }
-            { index = 18; color = "0x${colors.base01}"; }
-            { index = 19; color = "0x${colors.base02}"; }
-            { index = 20; color = "0x${colors.base04}"; }
-            { index = 21; color = "0x${colors.base06}"; }
-          ];
-        };
       };
     };
 

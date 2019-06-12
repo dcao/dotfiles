@@ -19,7 +19,9 @@
     kernelPackages = pkgs.linuxPackages_5_0;
     loader = {
       systemd-boot.enable = true;
-      efi.canTouchEfiVariables = true;
+      efi = {
+        canTouchEfiVariables = true;
+      };
     };
     tmpOnTmpfs = true;
   };
@@ -45,6 +47,7 @@
       enable = true;
       driSupport = true;
       driSupport32Bit = true;
+      extraPackages = with pkgs; [ beignet vaapiIntel libvdpau-va-gl vaapiVdpau ];
     };
   };
 
@@ -68,6 +71,7 @@
 
   # Set your time zone.
   time.timeZone = "America/Los_Angeles";
+  time.hardwareClockInLocalTime = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -150,6 +154,7 @@
       roboto
       libre-baskerville
       emacs-all-the-icons-fonts
+      ibm-plex
       fira
     ];
     fontconfig = {

@@ -25,12 +25,14 @@
   #
   # Default wallpaper
   output * bg "${world-wall}/share/artwork/gnome/world.png" fill 
+  output HDMI-A-2 scale 1 pos 1920,0
   #
   # Example configuration:
   #
   #   output HDMI-A-1 resolution 1920x1080 position 1920,0
   #
   # You can get the names of your outputs by running: swaymsg -t get_outputs
+
   
   ### Idle configuration
   #
@@ -118,6 +120,7 @@
       bindsym $mod+Shift+Right move right
   #
   # Workspaces:
+  # Workspaces:
   #
       # switch to workspace
       bindsym $mod+1 workspace number 1
@@ -141,6 +144,10 @@
       bindsym $mod+Shift+8 move container to workspace number 8
       bindsym $mod+Shift+9 move container to workspace number 9
       bindsym $mod+Shift+0 move container to workspace number 10
+      bindsym $mod+Alt+l move container to output right
+      bindsym $mod+Alt+h move container to output left
+      bindsym $mod+Shift+Alt+l move workspace to output right
+      bindsym $mod+Shift+Alt+h move workspace to output left
       # Note: workspaces can have any name you want, not just numbers.
       # We just use 1-10 as the default.
       bindsym $mod+e exec sway_rename.sh
@@ -204,7 +211,6 @@
       bindsym Down resize grow height 10px
       bindsym Up resize shrink height 10px
       bindsym Right resize grow width 10px
-  
       # return to default mode
       bindsym Return mode "default"
       bindsym Escape mode "default"

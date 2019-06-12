@@ -27,7 +27,6 @@
 
 ;; Rust
 (after! lsp-mode
-  (add-to-list 'flycheck-disabled-checkers 'rust-cargo)
   (add-hook! 'rust-mode-hook 'lsp-mode))
 
 ;; Magit
