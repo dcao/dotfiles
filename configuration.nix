@@ -16,7 +16,7 @@
 
   # Use the systemd-boot EFI boot loader.
   boot = {
-    kernelPackages = pkgs.linuxPackages_5_0;
+    kernelPackages = pkgs.linuxPackages_5_1;
     loader = {
       systemd-boot.enable = true;
       efi = {
@@ -90,6 +90,9 @@
 
     # misc
     gnupg bashmount light xdg_utils
+
+    # gnome
+    gnomeExtensions.dash-to-panel arc-theme
   ];
 
   programs.fish.enable = true;
@@ -138,11 +141,47 @@
   services.tlp.enable = true;
 
   # But we're too cool for X11. Wayland!!!!
-  programs.sway.enable = true;
-  environment.etc."libinput-gestures.conf".text = ''
-    gesture swipe right 3 swaymsg workspace next_on_output
-    gesture swipe left 3 swaymsg workspace prev_on_output
-  '';
+  # programs.sway.enable = true;
+  # environment.etc."libinput-gestures.conf".text = ''
+  #   gesture swipe right 3 swaymsg workspace next_on_output
+  #   gesture swipe left 3 swaymsg workspace prev_on_output
+  # '';
+
+  # Enable the X11 windowing system.
+  services.xserver = {
+    enable = true;
+    layout = "us";
+    xkbOptions = "eurosign:e";
+    autoRepeatDelay = 200;
+    autoRepeatInterval = 25;
+    videoDrivers = [ "intel" ];
+
+    displayManager.gdm = {
+      enable = true;
+    };
+
+    desktopManager.gnome3 = {
+      enable = true;
+      extraGSettingsOverrides = ''
+        [org.gnome.desktop.peripherals.keyboard]
+        repeat-interval = 25
+        delay = 200
+
+        [org.gnome.desktop.wm.keybindings]
+        switch-applications = []
+        switch-windows = ['<Super>Tab', '<Alt>Tab']
+      '';
+    };
+
+    libinput = {
+      enable = true;
+      accelProfile = "flat";
+      naturalScrolling = true;
+      disableWhileTyping = true;
+    };
+  };
+
+  services.gnome3.chrome-gnome-shell.enable = true;
 
   # Fonts!!!
   fonts = {
@@ -173,8 +212,11 @@
     HibernateDelaySec=900
   '';
 
+  i18n.inputMethod.enabled = "ibus";
+
   nixpkgs.config = {
     allowUnfree = true; 
+    firefox.enableGnomeExtensions = true;
   };
 
   services.dbus.packages = with pkgs; [ blueman ];

@@ -145,6 +145,8 @@ rec {
       neofetch imagemagick arduino keybase-gui
       exa firefox sbcl cabal2nix lightworks
       woeusb nix-prefetch-git vgo2nix aerc
+      jpegoptim woff2 nodePackages.node2nix
+      s3cmd openssl
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};

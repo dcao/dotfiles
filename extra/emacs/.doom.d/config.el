@@ -1,8 +1,8 @@
 ;;; config/default/config.el -*- lexical-binding: t; -*-
 
-(setq doom-font (font-spec :family "Iosevka" :size 18))
+(setq doom-font (font-spec :family "Iosevka" :size 16))
 ; (setq doom-font (font-spec :family "InputMonoCompressed Medium" :size 19))
-(setq doom-variable-pitch-font (font-spec :family "Libre Baskerville" :size 16))
+(setq doom-variable-pitch-font (font-spec :family "Libre Baskerville" :size 14))
 ; (setq doom-variable-pitch-font (font-spec :family "Input Serif Compressed Medium" :size 18))
 (setq doom-theme 'doom-gruvbox)
 ;; doom-unicode-font

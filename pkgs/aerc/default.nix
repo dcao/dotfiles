@@ -35,12 +35,14 @@ buildGoModule rec {
 	install -m644 config/accounts.conf $out/share/aerc/accounts.conf
 	install -m644 aerc.conf $out/share/aerc/aerc.conf
 	install -m644 config/binds.conf $out/share/aerc/binds.conf
-    # install -m755 contrib/hldiff $out/share/aerc/filters/hldiff
-	# install -m755 contrib/html $out/share/aerc/filters/html
-    # install -m755 contrib/plaintext $out/share/aerc/filters/plaintext
+    install -m755 contrib/hldiff $out/share/aerc/filters/hldiff
+	install -m755 contrib/html $out/share/aerc/filters/html
+    install -m755 contrib/plaintext $out/share/aerc/filters/plaintext
 
     runHook postInstall
   '';
+
+  dontPatchShebangs = true;
 
   meta = with stdenv.lib; {
     description = "The world's best email client";
