@@ -80,7 +80,7 @@
     coreutils gitAndTools.gitFull htop
     wget curl zip unzip tree bc
     gcc pkg-config binutils ccache gnumake
-    waybar libinput-gestures
+    libinput-gestures
 
     # fs
     ntfs3g exfat
@@ -90,9 +90,6 @@
 
     # misc
     gnupg bashmount light xdg_utils
-
-    # gnome
-    gnomeExtensions.dash-to-panel arc-theme
   ];
 
   programs.fish.enable = true;
@@ -140,13 +137,6 @@
   # TLP
   services.tlp.enable = true;
 
-  # But we're too cool for X11. Wayland!!!!
-  # programs.sway.enable = true;
-  # environment.etc."libinput-gestures.conf".text = ''
-  #   gesture swipe right 3 swaymsg workspace next_on_output
-  #   gesture swipe left 3 swaymsg workspace prev_on_output
-  # '';
-
   # Enable the X11 windowing system.
   services.xserver = {
     enable = true;
@@ -159,18 +149,9 @@
     displayManager.gdm = {
       enable = true;
     };
-
-    desktopManager.gnome3 = {
+    
+    windowManager.awesome = {
       enable = true;
-      extraGSettingsOverrides = ''
-        [org.gnome.desktop.peripherals.keyboard]
-        repeat-interval = 25
-        delay = 200
-
-        [org.gnome.desktop.wm.keybindings]
-        switch-applications = []
-        switch-windows = ['<Super>Tab', '<Alt>Tab']
-      '';
     };
 
     libinput = {
@@ -180,8 +161,6 @@
       disableWhileTyping = true;
     };
   };
-
-  services.gnome3.chrome-gnome-shell.enable = true;
 
   # Fonts!!!
   fonts = {
@@ -216,7 +195,6 @@
 
   nixpkgs.config = {
     allowUnfree = true; 
-    firefox.enableGnomeExtensions = true;
   };
 
   services.dbus.packages = with pkgs; [ blueman ];

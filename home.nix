@@ -8,8 +8,6 @@ let
   dots = "/home/david/.files";
   extra = "${dots}/extra";
   browser = "qutebrowser";
-  waylandUrl = "https://github.com/colemickens/nixpkgs-wayland/archive/master.tar.gz";
-  waylandOverlay = (import (builtins.fetchTarball waylandUrl));
   colors = import ./cfg/colors;
 
 in
@@ -19,7 +17,6 @@ rec {
     config.allowUnfree = true;
     overlays = [
       (import ./overlays/dcao.nix)
-      waylandOverlay
     ];
   };
 
@@ -116,15 +113,7 @@ rec {
 
   xdg.configFile = {
     "user-dirs.dirs".source = "${extra}/x/.config/user-dirs.dirs";
-    "sway/config".text = (import ./cfg/sway.nix) {
-      world-wall = pkgs.world-wall;
-    };
-    "swaylock/config".text = (import ./cfg/swaylock.nix) {
-      world-wall = pkgs.world-wall;
-    };
-    "swaynag/config".text = (import ./cfg/swaynag.nix) {};
-    "waybar/config".text = ((import ./cfg/waybar.nix) {}).config;
-    "waybar/styles.css".text = ((import ./cfg/waybar.nix) {}).styles;
+    "awesome".source = "${extra}/awesome";
   };
 
   xdg.dataFile = {
@@ -138,15 +127,12 @@ rec {
       sxiv cmst libreoffice discord libnotify
       ranger qbittorrent aspell darktable mpv
       blueman spotify nix-prefetch-github
-      olive-editor youtube-dl steam mako jq
-      imgur-sh grim slurp wl-clipboard fzf
-      hugo pandoc ffmpeg fava ipe anki
-      redshift-wayland torbrowser scribus
-      neofetch imagemagick arduino keybase-gui
-      exa firefox sbcl cabal2nix lightworks
-      woeusb nix-prefetch-git vgo2nix aerc
-      jpegoptim woff2 nodePackages.node2nix
-      s3cmd openssl
+      youtube-dl steam mako jq imgur-sh
+      wl-clipboard fzf hugo pandoc ffmpeg fava
+      ipe anki scribus neofetch imagemagick
+      arduino keybase-gui exa firefox cabal2nix
+      woeusb nix-prefetch-git jpegoptim woff2
+      nix-index
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
@@ -165,7 +151,7 @@ rec {
     file = {
       ".ncmpcpp/config".source = "${extra}/ncmpcpp/config";
       "bin/sway_rename.sh".source = "${extra}/sway/sway_rename.sh";
-
+      ".world-wall.png".source = "${pkgs.world-wall}/share/artwork/gnome/world.png";
       ".doom.d" = {
         source = "${extra}/emacs/.doom.d";
         onChange = updateDoom;
@@ -263,12 +249,12 @@ rec {
     };
 
     beets = {
-      enable = true;
+      enable = false;
       settings = {
         directory = "~/default/mus";
-    library = "~/beets.db";
-    embedart.auto = "no";
-    play.command = "mpv";
+        library = "~/beets.db";
+        embedart.auto = "no";
+        play.command = "mpv";
         plugins = [ "fromfilename" ];
       };
     };
