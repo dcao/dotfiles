@@ -20,6 +20,7 @@ set background=dark
 set mouse=a
 set noshowmode
 set history=200
+syntax off
 nnoremap <F5> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
 
 let g:tex_flavor='latex'
@@ -28,6 +29,14 @@ let g:vimtex_quickfix_mode=0
 set conceallevel=1
 let g:tex_conceal='abdmg'
 
-let mapleader = "<SPC>"
+nnoremap <SPACE> <Nop>
+let mapleader = " "
 let maplocalleader = ","
+
+let g:vimwiki_list = [
+  \ {'path': '~/default/vimwiki', 'syntax': 'markdown', 'ext': '.md'}]
+
+nnoremap <leader>fw :NV<CR>
+nnoremap <leader>ff :Files<CR>
+nnoremap <leader>bb :Buffers<CR>
 ''

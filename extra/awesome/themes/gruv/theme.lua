@@ -34,21 +34,39 @@ local base0D = "#83a598"; -- blue
 local base0E = "#d3869b"; -- purple
 local base0F = "#d65d0e"; -- brown
 
+theme.base00 = base00; -- ----
+theme.base01 = base01; -- ---
+theme.base02 = base02; -- --
+theme.base03 = base03; -- -
+theme.base04 = base04; -- +
+theme.base05 = base05; -- ++
+theme.base06 = base06; -- +++
+theme.base07 = base07; -- ++++
+theme.base08 = base08; -- red
+theme.base09 = base09; -- orange
+theme.base0A = base0A; -- yellow
+theme.base0B = base0B; -- green
+theme.base0C = base0C; -- aqua/cyan
+theme.base0D = base0D; -- blue
+theme.base0E = base0E; -- purple
+theme.base0F = base0F; -- brown
+
 theme.bg_normal     = base00
-theme.bg_focus      = base0D
+theme.bg_focus      = base01
 theme.bg_urgent     = base08
 theme.bg_minimize   = base02
 theme.bg_systray    = theme.bg_normal
 
 theme.fg_normal     = base04
-theme.fg_focus      = base00
+theme.fg_focus      = base06
 theme.fg_urgent     = base00
 theme.fg_minimize   = base04
 
 theme.useless_gap   = dpi(0)
-theme.border_width  = dpi(1)
-theme.screen_margin = dpi(16)
-theme.border_normal = base00
+theme.border_width  = dpi(2)
+theme.screen_margin = dpi(4)
+theme.border_radius = dpi(6)
+theme.border_normal = base02
 theme.border_focus  = base0D
 theme.border_marked = base0C
 
@@ -74,11 +92,18 @@ theme.taglist_squares_unsel = theme_assets.taglist_squares_unsel(
     taglist_square_size, theme.fg_normal
 )
 
--- Variables set for theming notifications:
--- notification_font
--- notification_[bg|fg]
--- notification_[width|height|margin]
--- notification_[border_color|border_width|shape|opacity]
+-- Notifications
+theme.notification_margin = dpi(8)
+theme.notification_padding = 8
+theme.notification_border_width = dpi(2)
+theme.notification_fg = base06
+theme.notification_bg = base00
+theme.notification_border_color = base06
+theme.notification_low_border_color = base02
+theme.notification_crit_fg = base00
+theme.notification_crit_bg = base08
+theme.notification_crit_border_color = base02
+theme.notification_position = "bottom_right"
 
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
@@ -119,7 +144,7 @@ theme.titlebar_maximized_button_focus_inactive  = theme_folder .. "titlebar/maxi
 theme.titlebar_maximized_button_normal_active = theme_folder .. "titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active  = theme_folder .. "titlebar/maximized_focus_active.png"
 
-theme.wallpaper = "~/.world-wall.png"
+theme.wallpaper = "~/.wall.jpg"
 
 -- You can use your own layout icons like this:
 theme.layout_fairh = theme_folder .. "layouts/fairhw.png"

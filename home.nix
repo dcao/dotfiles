@@ -9,6 +9,7 @@ let
   extra = "${dots}/extra";
   browser = "qutebrowser";
   colors = import ./cfg/colors;
+  nvPlugins = pkgs.callPackage ./cfg/nvim/plugins.nix {};
 
 in
 
@@ -122,7 +123,9 @@ rec {
 
   home = {
     packages = with pkgs; [
-      qutebrowser rofi-pass ripgrep ncmpcpp
+      fd bat
+
+      qutebrowser rofi-pass ncmpcpp
       pavucontrol pass xdg-user-dirs
       sxiv cmst libreoffice discord libnotify
       ranger qbittorrent aspell darktable mpv
@@ -132,7 +135,9 @@ rec {
       ipe anki scribus neofetch imagemagick
       arduino keybase-gui exa firefox cabal2nix
       woeusb nix-prefetch-git jpegoptim woff2
-      nix-index
+      nix-index sbcl python3 mpc_cli
+
+      texlive.combined.scheme-medium
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
@@ -145,17 +150,15 @@ rec {
       fortune cowsay lolcat cmatrix
     ];
 
-    # for now, none of the rice has been transferred from the legacy stow
-    # system to the new fancy home-manager system. in the interim, we emulate
-    # what stow would've done here:
     file = {
       ".ncmpcpp/config".source = "${extra}/ncmpcpp/config";
       "bin/sway_rename.sh".source = "${extra}/sway/sway_rename.sh";
-      ".world-wall.png".source = "${pkgs.world-wall}/share/artwork/gnome/world.png";
+      ".wall.jpg".source = "${pkgs.catalina-wall}/share/artwork/gnome/catalina.jpg";
       ".doom.d" = {
         source = "${extra}/emacs/.doom.d";
         onChange = updateDoom;
       };
+      emacs = { source = "${extra}/emacs/.emacs.d"; target = ".emacs.d/"; recursive = true; };
       qutebrowser = { source = "${extra}/qutebrowser"; target = "."; recursive = true; };
       ranger = { source = "${extra}/ranger"; target = "."; recursive = true; };
       rofi = { source = "${extra}/rofi"; target = "."; recursive = true; };
@@ -199,6 +202,8 @@ rec {
         musdl = "youtube-dl -i --extract-audio --audio-format mp3 --audio-quality 0";
         startx = "startx ~/.xinitrc";
         ea = "exa -la";
+        n = "nvim ~/default/vimwiki/index.md -c 'NV'";
+        w = "nvim ~/default/vimwiki/index.md -c 'NV'";
       };
     };
 
@@ -249,7 +254,7 @@ rec {
     };
 
     beets = {
-      enable = false;
+      enable = true;
       settings = {
         directory = "~/default/mus";
         library = "~/beets.db";
@@ -369,10 +374,12 @@ rec {
       vimAlias = true;
 
       configure = {
-        packages.myVimPackage = with pkgs.vimPlugins; {
-          start = [
-            ale fugitive surround vim-nix lightline-vim vimtex ultisnips
-          ];
+        packages.myVimPackage = {
+          start = with pkgs.vimPlugins; [
+            ale fugitive surround vim-nix lightline-vim
+            vimtex ultisnips vimwiki fzf-vim fzfWrapper
+            vim-signature
+          ] ++ [ nvPlugins.notational-fzf-vim ];
           opt = [];
         };
         customRC = import ./cfg/nvim/rc.nix;

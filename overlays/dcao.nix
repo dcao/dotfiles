@@ -3,6 +3,7 @@ self: super:
 {
   openmpt = super.callPackage ../pkgs/openmpt.nix {};
   world-wall = super.callPackage ../pkgs/world-wall {};
+  catalina-wall = super.callPackage ../pkgs/catalina-wall {};
   olive-editor = super.libsForQt5.callPackage ../pkgs/olive-editor { 
     inherit (super.darwin.apple_sdk.frameworks) CoreFoundation;
   };

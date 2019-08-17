@@ -41,6 +41,7 @@
     trackpoint = {
       enable = true;
       emulateWheel = true;
+      speed = 160;
     };
 
     opengl = {
@@ -80,7 +81,7 @@
     coreutils gitAndTools.gitFull htop
     wget curl zip unzip tree bc
     gcc pkg-config binutils ccache gnumake
-    libinput-gestures
+    libinput-gestures ripgrep
 
     # fs
     ntfs3g exfat
@@ -109,6 +110,8 @@
     enable = true;
     coreOffset = "-85";
   };
+
+  services.emacs.enable = true;
 
   services.keybase.enable = true;
   services.kbfs.enable = true;

@@ -7,6 +7,7 @@ local gears = require("gears")
 local awful = require("awful")
 require("awful.autofocus")
 local xrandr = require("xrandr")
+local sharedtags = require("sharedtags")
 -- Widget and layout library
 local wibox = require("wibox")
 -- Theme handling library
@@ -18,6 +19,11 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
+
+local utils = require("utils")
+
+local lain = require("lain")
+local markup = lain.util.markup
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -63,8 +69,8 @@ modkey = "Mod4"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
-    awful.layout.suit.floating,
     awful.layout.suit.tile,
+    awful.layout.suit.floating,
     awful.layout.suit.max,
     -- awful.layout.suit.tile.left,
     -- awful.layout.suit.tile.bottom,
@@ -81,6 +87,46 @@ awful.layout.layouts = {
     -- awful.layout.suit.corner.se,
 }
 -- }}}
+
+-- {{{ Notifications
+-- Apply theme variables
+naughty.config.padding = beautiful.notification_padding
+naughty.config.defaults.margin = beautiful.notification_margin
+naughty.config.defaults.border_width = beautiful.notification_border_width
+
+naughty.config.presets.normal = {
+    font         = beautiful.notification_font,
+    fg           = beautiful.notification_fg,
+    bg           = beautiful.notification_bg,
+    border_width = beautiful.notification_border_width,
+    border_color = beautiful.notification_border_color,
+    margin       = beautiful.notification_margin,
+    position     = beautiful.notification_position
+}
+
+naughty.config.presets.low = {
+    font         = beautiful.notification_font,
+    fg           = beautiful.notification_fg,
+    bg           = beautiful.notification_bg,
+    border_width = beautiful.notification_border_width,
+    border_color = beautiful.notification_low_border_color,
+    margin       = beautiful.notification_margin,
+    position     = beautiful.notification_position
+}
+
+naughty.config.presets.ok = naughty.config.presets.low
+naughty.config.presets.info = naughty.config.presets.low
+naughty.config.presets.warn = naughty.config.presets.normal
+
+naughty.config.presets.critical = {
+    font         = beautiful.notification_font,
+    fg           = beautiful.notification_crit_fg,
+    bg           = beautiful.notification_crit_bg,
+    border_width = beautiful.notification_border_width,
+    border_color = beautiful.notification_crit_border_color,
+    margin       = beautiful.notification_margin,
+    position     = beautiful.notification_position
+}
 
 -- {{{ Menu
 -- Create a launcher widget and a main menu
@@ -101,12 +147,9 @@ mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesom
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
 -- }}}
 
--- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
-
 -- {{{ Wibar
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock()
+mytextclock = wibox.widget.textclock(" %Y-%m-%d %H:%M:%S ", 1)
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -160,26 +203,112 @@ local function set_wallpaper(s)
     end
 end
 
+local tags = sharedtags({
+    {}, {}, {}, {}, {}, {}, {}, {}, {}
+})
+
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
+
+-- wibar widgets
+local bat = lain.widget.bat({
+    notify = "off",
+    settings = function()
+        bl = bat_now.perc
+        txt = " " .. bl .. "% "
+        if bat_now.ac_status == 1 then
+            widget:set_markup(markup(beautiful.base0B, txt))
+        elseif bl >= 45 then
+            widget:set_markup(markup(beautiful.base0D, txt))
+        elseif bl >= 20 then
+            widget:set_markup(markup(beautiful.base0A, txt))
+        else
+            widget:set_markup(markup(beautiful.base08, txt))
+        end
+    end
+})
+
+local cpu = lain.widget.cpu({
+    settings = function()
+        if cpu_now.usage >= 75 then
+            widget:set_markup(markup(beautiful.base09, " " .. cpu_now.usage .. "% "))
+        else
+            widget:set_markup(" " .. cpu_now.usage .. "% ")
+        end
+    end
+})
+
+local mem = lain.widget.mem({
+    settings = function()
+       if mem_now.perc >= 75 then
+           widget:set_markup(markup(beautiful.base09, " " .. mem_now.used .. " MiB "))
+       else
+           widget:set_markup(" " .. mem_now.used .. " MiB ")
+       end
+    end
+})
+
+local pulse = lain.widget.pulse {
+    timeout = 1,
+    settings = function()
+        vlevel = volume_now.right .. "%"
+        if volume_now.muted == "yes" then
+            vlevel = vlevel .. " M"
+        end
+        widget:set_markup(markup(beautiful.base0E, " " .. vlevel .. " "))
+    end
+}
+
+-- text widget (which also updates the progressbar)
+local backlight = awful.widget.watch("light -G", 1,
+    function(widget, stdout)
+        local perc = tonumber(stdout:match("(%d+).%d"))
+        widget:set_markup(markup(beautiful.base0C, " " .. perc .. "% "))
+    end
+)
+
+function format_time(s)
+   return string.format("%d:%.2d", math.floor(s/60), s%60)
+end
+
+local mpd = lain.widget.mpd {
+   music_dir = "~/default/mus",
+   timeout = 1,
+   settings = function()
+      s = string.format(" ♫ [%s/%s] %s - %s ", format_time(mpd_now.elapsed), format_time(mpd_now.time), mpd_now.artist, mpd_now.title)
+      if mpd_now.state == "play" then
+         widget:set_markup(markup(beautiful.base0B, s))
+      elseif mpd_now.state == "pause" then
+         widget:set_markup(markup(beautiful.base03, s))
+      else
+         widget:set_markup("")
+      end
+   end
+}
+
+mpd.widget:buttons(awful.util.table.join(
+    awful.button({}, 1, function() -- left click
+        awful.spawn.with_shell("mpc toggle || ncmpc toggle || pms toggle")
+		mpd.update()
+    end),
+    awful.button({}, 2, function() -- middle click
+        awful.spawn.with_shell("mpc stop || ncmpc stop || pms stop")
+		mpd.update()
+    end)
+))
 
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
 
-    -- Each screen has its own tag table.
-    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    adjust = beautiful.screen_margin
+    s.padding = {left=s.padding.left+adjust, right=s.padding.right+adjust, top=s.padding.top+adjust, bottom=s.padding.bottom+adjust}
+
+    -- Each screen has its own tag table. (not needed bc of sharedtags)
+    -- awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
-    -- Create an imagebox widget which will contain an icon indicating which layout we're using.
-    -- We need one layoutbox per screen.
-    s.mylayoutbox = awful.widget.layoutbox(s)
-    s.mylayoutbox:buttons(gears.table.join(
-                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
-                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
-                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist {
         screen  = s,
@@ -191,28 +320,63 @@ awful.screen.connect_for_each_screen(function(s)
     s.mytasklist = awful.widget.tasklist {
         screen  = s,
         filter  = awful.widget.tasklist.filter.currenttags,
-        buttons = tasklist_buttons
+        buttons = tasklist_buttons,
+        layout   = {
+            spacing = 4,
+            layout  = wibox.layout.flex.horizontal
+        },
+        widget_template = {
+            {
+                {
+                    id     = 'text_role',
+                    align  = "center",
+                    widget = wibox.widget.textbox,
+                },
+                forced_width = 220,
+                left = 6,
+                right = 6,
+                -- Add margins to top and bottom in order to force the
+                -- text to be on a single line, if needed. Might need
+                -- to adjust them according to font size.
+                top  = 4,
+                bottom = 4,
+                widget = wibox.container.margin
+            },
+            id = "background_role",
+            widget = wibox.container.background,
+        },
     }
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s })
+    s.mywibox = awful.wibar({ position = "bottom", screen = s, height = 36 })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { -- Left widgets
-            layout = wibox.layout.fixed.horizontal,
-            s.mytaglist,
-            s.mypromptbox,
+        {
+            layout = wibox.layout.align.horizontal,
+            { -- Left widgets
+                layout = wibox.layout.fixed.horizontal,
+                s.mytaglist,
+                pulse,
+                backlight,
+                s.mypromptbox,
+            },
+            s.mytasklist,
+            { -- Right widgets
+                layout = wibox.layout.fixed.horizontal,
+                    wibox.widget.systray(),
+                mpd,
+                mem,
+                cpu,
+                bat,
+                mytextclock,
+            },
         },
-        s.mytasklist, -- Middle widget
-        { -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
-            wibox.widget.systray(),
-            mytextclock,
-            s.mylayoutbox,
-        },
+        left = 0,
+        right = 0,
+        top = 0,
+        color = "#231f20ff",
+        widget = wibox.container.margin,
     }
 end)
 -- }}}
@@ -276,6 +440,8 @@ globalkeys = gears.table.join(
               {description = "rofi", group = "launcher"}),
     awful.key({ "Mod1", "Control" }, "p", function () awful.spawn("rofi-pass") end,
               {description = "rofi-pass", group = "launcher"}),
+    awful.key({ modkey            }, "a", function () awful.spawn("st -e nvim /home/david/default/vimwiki/index.md -c 'NV'") end,
+              {description = "launch vimwiki", group = "launcher"}),
     awful.key({ modkey, "Shift"   }, "r", awesome.restart,
               {description = "reload awesome", group = "awesome"}),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit,
@@ -313,17 +479,17 @@ globalkeys = gears.table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Media keys
-    awful.key({ }, "XF86AudioRaiseVolume", function () awful.spawn("exec pactl set-sink-volume @DEFAULT_SINK@ +1%") end,
+    awful.key({ }, "XF86AudioRaiseVolume", function () awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ +1%") end,
               { description = "vol up", group = "media" }),
-    awful.key({ }, "XF86AudioLowerVolume", function () awful.spawn("exec pactl set-sink-volume @DEFAULT_SINK@ -1%") end,
+    awful.key({ }, "XF86AudioLowerVolume", function () awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ -1%") end,
               { description = "vol down", group = "media" }),
-    awful.key({ }, "XF86AudioMute", function () awful.spawn("exec pactl set-sink-mute @DEFAULT_SINK@ toggle") end,
+    awful.key({ }, "XF86AudioMute", function () awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle") end,
               { description = "mute", group = "media" }),
-    awful.key({ }, "XF86AudioMicMute", function () awful.spawn("exec pactl @DEFAULT_SOURCE@ 1 toggle") end,
+    awful.key({ }, "XF86AudioMicMute", function () awful.spawn("pactl @DEFAULT_SOURCE@ 1 toggle") end,
               { description = "mute mic", group = "media" }),
-    awful.key({ }, "XF86MonBrightnessUp", function () awful.spawn("exec light -A 5") end,
+    awful.key({ }, "XF86MonBrightnessUp", function () awful.spawn("light -A 5") end,
               { description = "brightness up", group = "media" }),
-    awful.key({ }, "XF86MonBrightnessDown", function () awful.spawn("exec light -U 5") end,
+    awful.key({ }, "XF86MonBrightnessDown", function () awful.spawn("light -U 5") end,
              { description = "brightness down", group = "media" }),
 
     -- Prompt
@@ -392,9 +558,9 @@ for i = 1, 9 do
         awful.key({ modkey }, "#" .. i + 9,
                   function ()
                         local screen = awful.screen.focused()
-                        local tag = screen.tags[i]
+                        local tag = tags[i]
                         if tag then
-                           tag:view_only()
+                           sharedtags.viewonly(tag, screen)
                         end
                   end,
                   {description = "view tag #"..i, group = "tag"}),
@@ -402,9 +568,9 @@ for i = 1, 9 do
         awful.key({ modkey, "Control" }, "#" .. i + 9,
                   function ()
                       local screen = awful.screen.focused()
-                      local tag = screen.tags[i]
+                      local tag = tags[i]
                       if tag then
-                         awful.tag.viewtoggle(tag)
+                         sharedtags.viewtoggle(tag, screen)
                       end
                   end,
                   {description = "toggle tag #" .. i, group = "tag"}),
@@ -412,7 +578,7 @@ for i = 1, 9 do
         awful.key({ modkey, "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                          local tag = client.focus.screen.tags[i]
+                          local tag = tags[i]
                           if tag then
                               client.focus:move_to_tag(tag)
                           end
@@ -423,7 +589,7 @@ for i = 1, 9 do
         awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                          local tag = client.focus.screen.tags[i]
+                          local tag = tags[i]
                           if tag then
                               client.focus:toggle_tag(tag)
                           end
@@ -524,8 +690,28 @@ client.connect_signal("manage", function (c)
     end
 end)
 
+-- Rounded corners
+if beautiful.border_radius ~= 0 then
+    client.connect_signal("manage", function (c, startup)
+        if not c.fullscreen then
+            c.shape = utils.rrect(beautiful.border_radius)
+        end
+    end)
+    -- Fullscreen clients should not have rounded corners
+    local function no_rounded_corners(c)
+        if c.fullscreen or c.maximized then
+            c.shape = utils.rect()
+        else
+            c.shape = utils.rrect(beautiful.border_radius)
+        end
+    end
+    client.connect_signal("property::fullscreen", no_rounded_corners)
+    client.connect_signal("property::maximized", no_rounded_corners)
+end
+
 -- Add a titlebar if titlebars_enabled is set to true in the rules.
 client.connect_signal("request::titlebars", function(c)
+    local top_titlebar = awful.titlebar(c, {size = 32})
     -- buttons for the titlebar
     local buttons = gears.table.join(
         awful.button({ }, 1, function()
@@ -538,9 +724,8 @@ client.connect_signal("request::titlebars", function(c)
         end)
     )
 
-    awful.titlebar(c) : setup {
+     top_titlebar : setup {
         { -- Left
-            awful.titlebar.widget.iconwidget(c),
             buttons = buttons,
             layout  = wibox.layout.fixed.horizontal
         },
@@ -553,11 +738,6 @@ client.connect_signal("request::titlebars", function(c)
             layout  = wibox.layout.flex.horizontal
         },
         { -- Right
-            awful.titlebar.widget.floatingbutton (c),
-            awful.titlebar.widget.maximizedbutton(c),
-            awful.titlebar.widget.stickybutton   (c),
-            awful.titlebar.widget.ontopbutton    (c),
-            awful.titlebar.widget.closebutton    (c),
             layout = wibox.layout.fixed.horizontal()
         },
         layout = wibox.layout.align.horizontal
