@@ -32,6 +32,7 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
  help-window-select t                             ; Focus new help windows when opened
  indent-tabs-mode nil                             ; Stop using tabs to indent
  inhibit-startup-screen t                         ; Disable start-up screen
+ initial-major-mode 'fundamental-mode
  initial-scratch-message ""                       ; Empty the initial *scratch* buffer
  scroll-conservatively most-positive-fixnum       ; Always scroll by one line
  scroll-margin 10                                 ; Add a margin when scrolling vertically
@@ -80,6 +81,26 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 (delight '((subword-mode nil t)
            (eldoc-mode nil t)))
 #+END_SRC
+** Evil
+#+BEGIN_SRC emacs-lisp
+(use-package evil
+  :delight
+  (undo-tree-mode)
+  :init
+  (setq
+   evil-want-C-u-scroll t
+   evil-want-C-i-jump nil)
+  (evil-mode)
+  (evil-normalize-keymaps))
+#+END_SRC
+*** Evil Fringe Mark
+To show marks in the left fringe of the editor.
+#+BEGIN_SRC emacs-lisp
+(use-package evil-fringe-mark
+  :delight
+  :config
+  (global-evil-fringe-mark-mode))
+#+END_SRC 
 ** general.el
 *** Leader definitions
 #+BEGIN_SRC emacs-lisp
@@ -89,6 +110,7 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 *** Bind configuration
 #+BEGIN_SRC emacs-lisp
   (use-package general
+    :after evil
     :config
     (general-evil-setup t)
     (general-unbind 'normal dcao/leader-key)
@@ -120,7 +142,6 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
       :keymaps 'normal
       dcao/local-leader-key '(nil :which-key "local leader")))
 #+END_SRC
-*** TODO bind escape key
 ** Meta
 *** Config reload
 #+BEGIN_SRC emacs-lisp
@@ -204,7 +225,6 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
   (setq centaur-tabs-set-bar 'over)
   (setq centaur-tabs-set-modified-marker t)
   (setq centaur-tabs-modified-marker "*")
-  (centaur-tabs-inherit-tabbar-faces)
   (centaur-tabs-mode t)
   (centaur-tabs-toggle-groups)
   :general
@@ -249,28 +269,16 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 	 (t
 	  (buffer-name)))))
 #+END_SRC
+** Olivetti
+#+BEGIN_SRC emacs-lisp
+(use-package olivetti
+  :commands olivetti-mode
+  :config
+  (setq olivetti-body-width 80))
+#+END_SRC
 ** TODO Eyebrowse
 ** TODO Persp?
 * Features
-** Evil
-#+BEGIN_SRC emacs-lisp
-(use-package evil
-  :delight
-  (undo-tree-mode)
-  :init
-  (setq
-   evil-want-C-u-scroll t
-   evil-want-C-i-jump nil)
-  (evil-mode))
-#+END_SRC
-*** Evil Fringe Mark
-To show marks in the left fringe of the editor.
-#+BEGIN_SRC emacs-lisp
-(use-package evil-fringe-mark
-  :delight
-  :config
-  (global-evil-fringe-mark-mode))
-#+END_SRC 
 ** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
@@ -297,6 +305,7 @@ To show marks in the left fringe of the editor.
 #+BEGIN_SRC emacs-lisp
 (use-package helm
   :after hide-mode-line
+  :commands (helm-find-files-1 helm-org-rifle-agenda-files)
   :delight helm-mode
   :preface
   (setq helm-display-header-line nil
@@ -415,6 +424,7 @@ To show marks in the left fringe of the editor.
 #+BEGIN_SRC emacs-lisp
 (use-package parinfer
   :ensure t
+  :after evil
   :general
   (:states 'normal
    :prefix dcao/local-leader-key
@@ -655,7 +665,6 @@ If on a:
   :init
   (defvar evil-org-key-theme '(navigation insert textobjects))
   (defvar evil-org-special-o/O '(table-row))
-  (add-hook 'org-load-hook #'+org|setup-evil-keybinds)
   (add-hook 'evil-org-mode-hook #'evil-normalize-keymaps)
   :config
   (add-hook 'org-open-at-point-functions #'evil-set-jump)
@@ -665,10 +674,7 @@ If on a:
 
 #+BEGIN_SRC emacs-lisp
 (use-package org
-  :after helm
   :ensure nil
-  :delight
-  (org-indent-mode)
 
   :general
   (:states 'normal
@@ -708,6 +714,9 @@ If on a:
   (use-package org-habit :ensure nil)
   (add-hook 'org-mode-hook #'org-indent-mode)
   (advice-add #'org-return-indent :after #'dcao/fix-newline-and-indent-in-src-blocks)
+  (advice-add 'org-refile :after
+        (lambda (&rest _)
+        (org-save-all-org-buffers)))
   (add-to-list 'org-modules 'org-habit)
   (setq org-src-fontify-natively t
         org-edit-src-content-indentation 0
@@ -719,7 +728,7 @@ If on a:
 *** Rifling
 #+BEGIN_SRC emacs-lisp
 (use-package helm-org-rifle
-  :after (org helm)
+  :after org
   :general
   (:states 'normal
    :prefix dcao/leader-key
@@ -766,5 +775,20 @@ is nil, refile in the current file."
         (org-paste-subtree 4)
         (widen)))))
   #+END_SRC
+** HTML
+#+BEGIN_SRC emacs-lisp
+(setq sgml-basic-offset 4)
+#+END_SRC
 ** TODO LSP
 * Apps
+** calfw
+#+BEGIN_SRC emacs-lisp
+(use-package calfw
+  :commands cfw:open-org-calendar
+  :general
+  (:states 'normal
+   :prefix dcao/leader-key
+   "C" 'cfw:open-org-calendar)
+  :config
+  (use-package calfw-org))
+#+END_SRC

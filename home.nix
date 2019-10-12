@@ -135,7 +135,9 @@ rec {
       ipe anki scribus neofetch imagemagick
       arduino keybase-gui exa firefox cabal2nix
       woeusb nix-prefetch-git jpegoptim woff2
-      nix-index sbcl python3 mpc_cli
+      nix-index sbcl python3 mpc_cli geckodriver
+      tokei appimage-run androidenv.androidPkgs_9_0.platform-tools
+      sent screen-message
 
       texlive.combined.scheme-medium
 
@@ -238,10 +240,14 @@ rec {
       enable = true;
       externalEditor = "st -e nvim -c 'set ft=mail' '+set tw=72' %1";
       # The notmuch hook already fetches from mbsync
-      pollScript = "NOTMUCH_CONFIG=~/.config/notmuch/notmuchrc notmuch new";
+      pollScript = "notmuch new";
       extraConfig = {
         editor.attachment_directory = "~/dl";
       };
+    };
+
+    alot = {
+      enable = true;
     };
 
     direnv = {
