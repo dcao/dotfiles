@@ -122,6 +122,13 @@ rec {
   };
 
   home = {
+    # We do this to preserve permissions in our aerc config files
+    activation.linkAerc = config.lib.dag.entryAfter ["installPackages"] (
+      ''
+      test -e ${config.home.homeDirectory}/.config/aerc || $DRY_RUN_CMD ln -s ${dots}/extra/aerc ${config.home.homeDirectory}/.config/
+      ''
+    );
+
     packages = with pkgs; [
       fd bat
 
@@ -130,16 +137,17 @@ rec {
       sxiv cmst libreoffice discord libnotify
       ranger qbittorrent aspell darktable mpv
       blueman spotify nix-prefetch-github
-      youtube-dl steam mako jq imgur-sh
-      wl-clipboard fzf hugo pandoc ffmpeg fava
+      youtube-dl mako jq steam imgur-sh
+      wl-clipboard fzf hugo pandoc ffmpeg
       ipe anki scribus neofetch imagemagick
       arduino keybase-gui exa firefox cabal2nix
       woeusb nix-prefetch-git jpegoptim woff2
       nix-index sbcl python3 mpc_cli geckodriver
       tokei appimage-run androidenv.androidPkgs_9_0.platform-tools
-      sent screen-message
+      sent screen-message pinentry-qt aerc w3m
+      cachix
 
-      texlive.combined.scheme-medium
+      texlive.combined.scheme-full
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
@@ -156,6 +164,7 @@ rec {
       ".ncmpcpp/config".source = "${extra}/ncmpcpp/config";
       "bin/sway_rename.sh".source = "${extra}/sway/sway_rename.sh";
       ".wall.jpg".source = "${pkgs.catalina-wall}/share/artwork/gnome/catalina.jpg";
+      ".notmuch-config".source = "/home/david/.config/notmuch/notmuchrc";
       ".doom.d" = {
         source = "${extra}/emacs/.doom.d";
         onChange = updateDoom;
@@ -240,7 +249,10 @@ rec {
       enable = true;
       externalEditor = "st -e nvim -c 'set ft=mail' '+set tw=72' %1";
       # The notmuch hook already fetches from mbsync
-      pollScript = "notmuch new";
+      
+      pollScript = ''
+      export PASSWORD_STORE_DIR=/home/david/default/pass/
+      notmuch new'';
       extraConfig = {
         editor.attachment_directory = "~/dl";
       };
@@ -397,6 +409,7 @@ rec {
     gpg-agent = {
       enable = true;
       enableSshSupport = true;
+      extraConfig = "pinentry-program /home/david/.nix-profile/bin/pinentry-qt";
     };
 
     syncthing.enable = true;

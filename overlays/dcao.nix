@@ -9,6 +9,5 @@ self: super:
   };
   imgur-sh = super.callPackage ../pkgs/imgur-sh.nix {};
   waybar = super.callPackage ../pkgs/waybar {};
-  aerc = super.callPackage ../pkgs/aerc {};
   lightworks = super.callPackage ../pkgs/lightworks.nix {};
 }

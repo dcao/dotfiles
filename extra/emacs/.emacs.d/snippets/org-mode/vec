@@ -1,0 +1,3 @@
+# name: angle-bracket vector
+# --
+\left< $1 \right>$0

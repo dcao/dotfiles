@@ -33,9 +33,6 @@ nnoremap <SPACE> <Nop>
 let mapleader = " "
 let maplocalleader = ","
 
-let g:vimwiki_list = [
-  \ {'path': '~/default/vimwiki', 'syntax': 'markdown', 'ext': '.md'}]
-
 nnoremap <leader>fw :NV<CR>
 nnoremap <leader>ff :Files<CR>
 nnoremap <leader>bb :Buffers<CR>

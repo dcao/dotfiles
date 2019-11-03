@@ -1,0 +1,3 @@
+# name: vmatrix
+# --
+$2\begin{vmatrix}$1\end{vmatrix}$0

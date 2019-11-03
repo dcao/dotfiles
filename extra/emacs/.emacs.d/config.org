@@ -376,8 +376,22 @@ To show marks in the left fringe of the editor.
    :keymaps 'normal
    "g g" 'magit-status))
 #+END_SRC
+** Dired
+Adding a keybind to show git info:
+#+BEGIN_SRC emacs-lisp
+(use-package dired-git-info
+  :general
+  (:keymaps 'dired-mode-map
+   ")" 'dired-git-info-mode))
+#+END_SRC
+** Yasnippet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :config
+  (setq yas-snippet-dirs '("~/.files/extra/emacs/.emacs.d/snippets"))
+  (yas-global-mode 1))
+#+END_SRC
 ** TODO Projectile
-** TODO Magit
 * Languages
 ** Haskell
 #+BEGIN_SRC emacs-lisp
@@ -707,7 +721,10 @@ If on a:
    "w" 'widen
    "x" 'org-export-dispatch
    "t" 'org-todo
-   "m" 'org-time-stamp)
+   "m" 'org-time-stamp
+   "c" '(:ignore t :which-key "clock")
+   "c i" 'org-clock-in
+   "c o" 'org-clock-out)
 
   :config
   (use-package org-contacts :ensure nil)

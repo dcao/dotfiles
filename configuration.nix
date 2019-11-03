@@ -5,13 +5,18 @@
 { config, pkgs, ... }:
 
 {
+  nix = {
+    binaryCachePublicKeys = [ "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs=" ];
+    binaryCaches = [ "https://hydra.iohk.io" "https://cache.nixos.org" ];
+  };
+
   nixpkgs.overlays = [
     (import ./overlays/dcao.nix)
   ];
 
   imports =
     [ # Include the results of the hardware scan.
-      ./hw-boomerang.nix
+    ./hw-boomerang.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -111,6 +116,8 @@
     coreOffset = "-85";
   };
 
+  services.blueman.enable = true;
+
   services.emacs.enable = true;
 
   services.keybase.enable = true;
@@ -119,6 +126,9 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   programs.ssh.startAgent = true;
+
+  # Add postgres for development
+  services.postgresql.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -162,6 +172,7 @@
       accelProfile = "flat";
       naturalScrolling = true;
       disableWhileTyping = true;
+      tapping = false;
     };
   };
 
