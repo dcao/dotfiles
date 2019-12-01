@@ -54,6 +54,11 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 (setq
  use-package-always-ensure t)
 
+;; Put autosaves in emacs-saves
+(setq auto-save-file-name-transforms
+  `((".*" "~/.emacs-saves/" t)))
+(setq backup-directory-alist '(("." . "~/.emacs-saves")))
+
 (cd "~/")                                         ; Move to the user directory
 (delete-selection-mode 1)                         ; Replace region when inserting text
 (display-time-mode 0)                             ; Enable time in the mode-line
@@ -387,23 +392,49 @@ Adding a keybind to show git info:
 ** Yasnippet
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
+  :general
+  (:states 'normal
+   :prefix dcao/local-leader-key
+   "s" '(:ignore t :which-key "snippets")
+   "s n" 'yas-new-snippet
+   "s e" 'yas-visit-snippet-file)
   :config
   (setq yas-snippet-dirs '("~/.files/extra/emacs/.emacs.d/snippets"))
   (yas-global-mode 1))
 #+END_SRC
-** TODO Projectile
+** Flycheck
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :init (global-flycheck-mode))
+#+END_SRC
 * Languages
 ** Haskell
 #+BEGIN_SRC emacs-lisp
 (use-package haskell-mode
+  :hook ((haskell-mode . direnv-update-environment))
   :mode "\\.hs\\'")
 
-(use-package dante
-  :after haskell-mode
-  :commands 'dante-mode
-  :init
-  ; (add-hook 'haskell-mode-hook 'flycheck-mode)
-  (add-hook 'haskell-mode-hook 'dante-mode))
+; (use-package dante
+;   :commands 'dante-mode
+;   :hook ((haskell-mode-hook . dante-mode))
+;   :config
+;   (setq dante-debug '(inputs outputs responses command-line))
+;   (setq dante-methods '(new-impure-nix new-build bare-ghci)))
+
+; (use-package lsp-haskell
+;   :hook ((haskell-mode-hook . lsp-mode))
+;   :init
+;   (setq lsp-haskell-process-wrapper-function
+;     (lambda (argv)
+;       (append
+;         (append (list "nix-shell" "-I" "." "--command" )
+;                 (list (mapconcat 'identity argv " ")))
+;         (list (concat (lsp-haskell--get-root) "/shell.nix"))))))
+#+END_SRC
+** Rust
+#+BEGIN_SRC emacs-lisp
+(use-package rust-mode
+  :mode "\\.rs\\'")
 #+END_SRC
 ** Markdown
 #+BEGIN_SRC emacs-lisp
@@ -515,6 +546,8 @@ Adding a keybind to show git info:
 
 (setq org-agenda-files `(,dcao/org-root)
       org-archive-location (concat dcao/org-root "archive/%s::")
+      org-agenda-span 1
+      org-agenda-start-on-weekday nil
       org-log-done 'time
       org-log-into-drawer t
       org-expiry-inactive-timestamps t
@@ -559,11 +592,11 @@ Adding a keybind to show git info:
              if (member keyword keywords)
              return keywords)))
 #+END_SRC
-
 #+BEGIN_SRC emacs-lisp
 (defun dcao/org/refresh-inline-images ()
   "Refresh image previews in the current heading/tree."
   (interactive)
+  
   (if (> (length org-inline-image-overlays) 0)
       (org-remove-inline-images)
     (org-display-inline-images
@@ -734,7 +767,9 @@ If on a:
   (advice-add 'org-refile :after
         (lambda (&rest _)
         (org-save-all-org-buffers)))
+  
   (add-to-list 'org-modules 'org-habit)
+    
   (setq org-src-fontify-natively t
         org-edit-src-content-indentation 0
         org-src-window-setup 'current-window
@@ -792,11 +827,51 @@ is nil, refile in the current file."
         (org-paste-subtree 4)
         (widen)))))
   #+END_SRC
+*** org-timeline
+#+BEGIN_SRC emacs-lisp
+;; We define a new insert timeline function, modelled after the og
+;; org-timeline-insert-timeline, except we always insert at the
+;; beginning of the buffer
+(defun dcao/org-timeline-insert-timeline ()
+  (unless (buffer-narrowed-p)
+    (goto-char (point-min))
+    (while (and (eq (get-text-property (line-beginning-position) 'org-agenda-type) 'agenda)
+                (not (eobp)))
+      (forward-line))
+    (forward-line)
+    (goto-char (point-min))
+    (let ((inhibit-read-only t))
+      (insert (org-timeline--generate-timeline))
+      (insert (propertize (concat "\n" (make-string (/ (window-width) 2) ?─)) 'face 'org-time-grid) "\n"))
+    ;; enable `font-lock-mode' in agenda view to display the "chart"
+    (font-lock-mode)))
+
+(use-package org-timeline
+  :config
+  (add-hook 'org-agenda-finalize-hook 'dcao/org-timeline-insert-timeline :append))
+#+END_SRC
 ** HTML
 #+BEGIN_SRC emacs-lisp
 (setq sgml-basic-offset 4)
 #+END_SRC
-** TODO LSP
+** LSP
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-mode
+  :hook (rust-mode . lsp)
+  :commands lsp
+  :config
+  (setq lsp-prefer-flymake nil))
+
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode)
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+#+END_SRC
+** Yaml
+#+BEGIN_SRC emacs-lisp
+(use-package yaml-mode
+  :mode (("\\.yaml\\'" . yaml-mode)
+         ("\\.yml\\'" . yaml-mode)))
+#+END_SRC
 * Apps
 ** calfw
 #+BEGIN_SRC emacs-lisp
@@ -808,4 +883,24 @@ is nil, refile in the current file."
    "C" 'cfw:open-org-calendar)
   :config
   (use-package calfw-org))
+#+END_SRC
+** elfeed
+#+BEGIN_SRC emacs-lisp
+(use-package elfeed
+  :general
+  (:states 'normal
+   :prefix dcao/leader-key
+   "o e" 'elfeed))
+
+  :config
+  (add-to-list 'evil-emacs-state-modes 'elfeed-search-mode)
+  (add-to-list 'evil-emacs-state-modes 'elfeed-show-mode)
+  (use-package elfeed-web)
+  (use-package elfeed-goodies
+    :config
+    (elfeed-goodies/setup))
+  (use-package elfeed-org
+    :config
+    (elfeed-org)
+    (setq rmh-elfeed-org-files (list (concat dcao/org-root "elfeed.org"))))
 #+END_SRC

@@ -11,6 +11,8 @@ note: this repo completely clears the commit history; previous history is availa
    ```shell
    $ sudo ln -sf ~/.files/configuration.nix /etc/nixos/configuration.nix
    $ sudo ln -sf ~/.files/hw-boomerang.nix /etc/nixos/hw-boomerang.nix
+   $ sudo mkdir -p /etc/nixos/overlays-compat
+   $ sudo ln -sf ~/.files/overlays.nix /etc/nixos/overlays-compat/overlays.nix
    $ sudo nixos-rebuild switch --upgrade
    ```
 

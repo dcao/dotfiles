@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: indefinite integral
+# --
+\int $1 \, $0

@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: definite integral
+# --
+\int\limits_{$1}^{$2} $3 \, $0

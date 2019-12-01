@@ -10,4 +10,8 @@ self: super:
   imgur-sh = super.callPackage ../pkgs/imgur-sh.nix {};
   waybar = super.callPackage ../pkgs/waybar {};
   lightworks = super.callPackage ../pkgs/lightworks.nix {};
+
+  icuuc = self.icu;
+  icui18n = self.icu;
+  icudata = self.icu;
 }

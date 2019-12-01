@@ -1,3 +1,4 @@
 # name: dfrac
+# key: d/
 # --
 \dfrac{$1}{$2}$0

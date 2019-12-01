@@ -1,0 +1,4 @@
+# name: fraction
+# key: //
+# --
+\frac{$1}{$2}$0

@@ -2,12 +2,13 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, options, ... }:
 
 {
   nix = {
     binaryCachePublicKeys = [ "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs=" ];
     binaryCaches = [ "https://hydra.iohk.io" "https://cache.nixos.org" ];
+    nixPath = options.nix.nixPath.default ++ [ "nixpkgs-overlays=/etc/nixos/overlays-compat/" ];
   };
 
   nixpkgs.overlays = [
@@ -17,6 +18,7 @@
   imports =
     [ # Include the results of the hardware scan.
     ./hw-boomerang.nix
+    /etc/nixos/cachix.nix
     ];
 
   # Use the systemd-boot EFI boot loader.

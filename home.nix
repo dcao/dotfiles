@@ -112,22 +112,42 @@ rec {
     };
   };
 
-  xdg.configFile = {
-    "user-dirs.dirs".source = "${extra}/x/.config/user-dirs.dirs";
-    "awesome".source = "${extra}/awesome";
-  };
-
-  xdg.dataFile = {
-    "fonts".source = "${config.home.homeDirectory}/default/fonts";
+  xdg = {
+    configFile = {
+      "user-dirs.dirs".source = "${extra}/x/.config/user-dirs.dirs";
+      "awesome".source = "${extra}/awesome";
+    };
+    dataFile = {
+      "fonts".source = "${config.home.homeDirectory}/default/fonts";
+    };
+    mimeApps = {
+      enable = true;
+      associations.added = {
+        "text/x-emacs-lisp" = "emacs.desktop";
+        "text/plain" = "emacs.desktop";
+        "text/html" = "org.gnome.gedit.desktop";
+      };
+      defaultApplications = {
+        "text/html" = "org.qutebrowser.qutebrowser.desktop";
+      };
+    };
   };
 
   home = {
     # We do this to preserve permissions in our aerc config files
-    activation.linkAerc = config.lib.dag.entryAfter ["installPackages"] (
-      ''
-      test -e ${config.home.homeDirectory}/.config/aerc || $DRY_RUN_CMD ln -s ${dots}/extra/aerc ${config.home.homeDirectory}/.config/
-      ''
-    );
+    activation = {
+      linkAerc = config.lib.dag.entryAfter [ "installPackages" ] (
+        ''
+        test -e ${config.home.homeDirectory}/.config/aerc || $DRY_RUN_CMD ln -s ${dots}/extra/aerc ${config.home.homeDirectory}/.config/
+        ''
+      );
+      setXDGSettings = config.lib.dag.entryBefore [ "linkGeneration" ] (
+        ''
+        # We already set $BROWSER so we don't need this
+        # xdg-settings set default-web-browser qutebrowser.desktop
+        ''
+      );
+    };
 
     packages = with pkgs; [
       fd bat
@@ -145,7 +165,11 @@ rec {
       nix-index sbcl python3 mpc_cli geckodriver
       tokei appimage-run androidenv.androidPkgs_9_0.platform-tools
       sent screen-message pinentry-qt aerc w3m
-      cachix
+      cachix haskellPackages.hpack slack
+      ledger hledger ledger-autosync python37Packages.ofxclient
+      s3cmd
+
+      python37Packages.selenium
 
       texlive.combined.scheme-full
 
@@ -181,6 +205,7 @@ rec {
       TERM = "xterm-256color";
       PASSWORD_STORE_DIR = "$HOME/default/pass/";
       FZF_DEFAULT_OPTS = "--height 50% --reverse --ansi";
+      LEDGER_FILE = "$HOME/default/ledger/main.ldg";
     };
   };
 
@@ -215,6 +240,8 @@ rec {
         ea = "exa -la";
         n = "nvim ~/default/vimwiki/index.md -c 'NV'";
         w = "nvim ~/default/vimwiki/index.md -c 'NV'";
+        h = "hledger";
+        lsync = "ledger-autosync -l /home/david/default/ledger/combined.ldg --payee-format '{payee}' >> /home/david/default/ledger/review.ldg";
       };
     };
 
@@ -347,8 +374,7 @@ rec {
         
         # y and p as in vim
         bind Escape copy-mode
-        unbind p
-        bind p paste-buffer
+        bind v paste-buffer
         bind -T copy-mode-vi 'v' send -X begin-selection
         bind -T copy-mode-vi 'y' send -X copy-selection
         bind -T copy-mode-vi 'Space' send -X halfpage-down
