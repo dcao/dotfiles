@@ -10,7 +10,7 @@ let
   browser = "qutebrowser";
   colors = import ./cfg/colors;
   nvPlugins = pkgs.callPackage ./cfg/nvim/plugins.nix {};
-
+  dyalogOverlay = import ("${builtins.fetchTarball https://github.com/markus1189/dyalog-nixos/archive/master.tar.gz}/overlay.nix");
 in
 
 rec {
@@ -18,6 +18,7 @@ rec {
     config.allowUnfree = true;
     overlays = [
       (import ./overlays/dcao.nix)
+      (dyalogOverlay)
     ];
   };
 
@@ -167,7 +168,8 @@ rec {
       sent screen-message pinentry-qt aerc w3m
       cachix haskellPackages.hpack slack
       ledger hledger ledger-autosync python37Packages.ofxclient
-      s3cmd
+      s3cmd maim feh xorg.xbacklight xorg.xfd gnome3.cheese
+      xclip dyalog xorg.xev gnuapl xorg.xwininfo
 
       python37Packages.selenium
 
@@ -186,15 +188,16 @@ rec {
 
     file = {
       ".ncmpcpp/config".source = "${extra}/ncmpcpp/config";
-      "bin/sway_rename.sh".source = "${extra}/sway/sway_rename.sh";
+      # "bin/sway_rename.sh".source = "${extra}/sway/sway_rename.sh";
       ".wall.jpg".source = "${pkgs.catalina-wall}/share/artwork/gnome/catalina.jpg";
       ".notmuch-config".source = "/home/david/.config/notmuch/notmuchrc";
       ".doom.d" = {
         source = "${extra}/emacs/.doom.d";
         onChange = updateDoom;
       };
-      emacs = { source = "${extra}/emacs/.emacs.d"; target = ".emacs.d/"; recursive = true; };
+      emacs = { source = "${extra}/emacs/.emacs.d"; target = ".emacs.d/"; recursive = true; onChange = "rm ~/.emacs.d/config.el"; };
       qutebrowser = { source = "${extra}/qutebrowser"; target = "."; recursive = true; };
+      herbstluftwm = { source = "${extra}/herbstluftwm"; target = "."; recursive = true; };
       ranger = { source = "${extra}/ranger"; target = "."; recursive = true; };
       rofi = { source = "${extra}/rofi"; target = "."; recursive = true; };
     };
@@ -354,7 +357,7 @@ rec {
         set -g visual-activity off
         set-option -g repeat-time 250
         set-option -g message-style "bg=#${colors.base00}, fg=#${colors.base06}"
-        bind R source-file ~/.tmux.conf \; display-message ":: Config reloaded"
+        bind-key R source-file ~/.tmux.conf \; display-message ":: Config reloaded"
 
         # status line fmt
         set -g status-left ""
@@ -373,38 +376,38 @@ rec {
         bind-key > set-option allow-rename on \; display-message ":: Enabled auto-rename for window [#I | #W]."
         
         # y and p as in vim
-        bind Escape copy-mode
-        bind v paste-buffer
-        bind -T copy-mode-vi 'v' send -X begin-selection
-        bind -T copy-mode-vi 'y' send -X copy-selection
-        bind -T copy-mode-vi 'Space' send -X halfpage-down
-        bind -T copy-mode-vi 'Bspace' send -X halfpage-up
+        bind-key Escape copy-mode
+        bind-key v paste-buffer
+        bind-key -T copy-mode-vi 'v' send -X begin-selection
+        bind-key -T copy-mode-vi 'y' send -X copy-selection
+        bind-key -T copy-mode-vi 'Space' send -X halfpage-down
+        bind-key -T copy-mode-vi 'Bspace' send -X halfpage-up
          
         # extra commands for interacting with the ICCCM clipboard
-        bind C-c run "tmux save-buffer - | wl-copy"
-        bind C-v run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer"
+        bind-key C-c run "tmux save-buffer - | wl-copy"
+        bind-key C-v run "tmux set-buffer \"$(wl-paste)\"; tmux paste-buffer"
          
         # easy-to-remember split pane commands
-        bind \ split-window -h
-        bind - split-window -v
-        unbind '"'
-        unbind %
+        bind-key / split-window -h
+        bind-key - split-window -v
+        unbind-key '"'
+        unbind-key %
          
         # moving between panes with vim movement keys
-        bind -r h select-pane -L
-        bind -r j select-pane -D
-        bind -r k select-pane -U
-        bind -r l select-pane -R
+        bind-key -r h select-pane -L
+        bind-key -r j select-pane -D
+        bind-key -r k select-pane -U
+        bind-key -r l select-pane -R
          
         # moving between windows with vim movement keys
-        bind -r C-h select-window -t :-
-        bind -r C-l select-window -t :+
+        bind-key -r C-h select-window -t :-
+        bind-key -r C-l select-window -t :+
          
         # resize panes with vim movement keys
-        bind -r H resize-pane -L 1
-        bind -r J resize-pane -D 1
-        bind -r K resize-pane -U 1
-        bind -r L resize-pane -R 1
+        bind-key -r H resize-pane -L 1
+        bind-key -r J resize-pane -D 1
+        bind-key -r K resize-pane -U 1
+        bind-key -r L resize-pane -R 1
         
         # pane colors
         set -g pane-border-style "fg=#${colors.base01}"
@@ -438,11 +441,81 @@ rec {
       extraConfig = "pinentry-program /home/david/.nix-profile/bin/pinentry-qt";
     };
 
+    compton = {
+      enable = true;
+      backend = "glx";
+      vSync = "opengl-mswc";
+      extraOptions = builtins.readFile "${extra}/compton/.config/compton.conf";
+    };
+
     syncthing.enable = true;
 
     mpd = {
       enable = true;
       musicDirectory = "${config.home.homeDirectory}/default/mus";
+    };
+
+    dunst = {
+      enable = true;
+
+      settings = {
+        shortcuts = {
+          "close" = "ctrl+space";
+          "close_all" = "ctrl+shift+space";
+          "history" = "ctrl+grave";
+        };
+
+        global = {
+          monitor = 0;
+          follow = "mouse";
+          geometry = "300x5-4-40";
+          indicate_hidden = true;
+          shrink = false;
+          transparency = 0;
+          notification_height = 0;
+          separator_height = 2;
+          padding = 8;
+          horizontal_padding = 12;
+          frame_width = 3;
+          separator_color = "frame";
+          sort = true;
+          idle_threshold = 15;
+          font = "Monospace 11";
+          line_height = 0;
+          dmenu = "/usr/bin/rofi -dmenu -p 'dunst:'";
+          browser = browser;
+          format = "<b>%s</b>\\n%b";
+          alignment = "left";
+          show_age_threshold = 60;
+          word_wrap = true;
+          ellipsize = "middle";
+          ignore_newline = false;
+          stack_duplicates = true;
+          hide_duplicant_count = false;
+          show_indicators = true;
+        };
+
+        urgency_low = {
+          background = "#282828";
+          foreground = "#a89984";
+          frame_color = "#666666";
+          timeout = 5;
+        };
+
+        urgency_normal = {
+          background = "#282828";
+          foreground = "#ebdbb2";
+          frame_color = "#ebdbb2";
+          timeout = 10;
+        };
+
+        urgency_critical = {
+          background = "#282828";
+          foreground = "#fb4934";
+          frame_color = "#fb4934";
+          timeout = 0;
+        };
+      };
     };
 
   };

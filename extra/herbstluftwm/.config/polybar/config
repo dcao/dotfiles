@@ -37,47 +37,47 @@ color0F = #d65d0e
 
 background = #231f20
 background-alt = #444
-foreground = #dfdfdf
+foreground = ${colors.color05}
 foreground-alt = ${colors.color03}
 primary = color0C
 secondary = #e60053
 alert = #bd2c40
 
 [bar/herbst]
-monitor = ${env:MONITOR:eDP-1}
+monitor = ${env:MONITOR:eDP1}
 width = 100%
 height = 36
 offset-x = 0%
 offset-y = 0%
 ;radius = 6.0
 fixed-center = true
+bottom = true
 
-module-margin-left = 2
-module-margin-right = 2
+module-margin-left = 1
+module-margin-right = 1
 
 background = ${colors.background}
 foreground = ${colors.foreground}
 
-line-size = 3
+line-size = 2
 line-color = #f00
 
-border-size = 4
+border-size = 0
 border-color = #00000000
 
-padding = 2
+padding-right = 1
 
 module-margin = 2
 
 ;; fonts
 ;; font-0 = lucy tewi:pixelsize=12;1
-font-0 = Iosevka:pixelsize=10;1
-font-1 = Siji:pixelsize=10;1
+font-0 = Iosevka:pixelsize=10;4
+font-1 = Siji:pixelsize=10;3
 
-modules-left = backlight-acpi pulseaudio mpd
-modules-center = ewmh
+modules-left = ewmh backlight-acpi pulseaudio herbst_clients xwindow
 modules-right = memory cpu wlan eth battery-combined-tlp date
 
-tray-position = right
+tray-position = center
 tray-padding = 2
 ;tray-transparent = true
 ;tray-background = #0063ff
@@ -96,9 +96,16 @@ tray-padding = 2
 cursor-click = pointer
 cursor-scroll = ns-resize
 
+[module/herbst_clients]
+type = custom/script
+exec = ~/.config/polybar/herbst_clients.sh
+tail = true
+; because of polybar's config parser, we have to copy-paste colors here :(
+format = %{F#665c54}%{T2}%{T-} %{F#83a598}<label>%{F-}
+
 [module/xwindow]
 type = internal/xwindow
-label = %title:0:30:...%
+label = %title:0:75:...%
 
 [module/xkeyboard]
 type = internal/xkeyboard
@@ -212,6 +219,7 @@ type = internal/xbacklight
 
 format = <ramp> <label>
 label = %percentage%%
+label-foreground = ${colors.color0C}
 
 ramp-0 = 
 ramp-1 = 
@@ -304,8 +312,8 @@ format-disconnected =
 type = internal/date
 interval = 1
 
-date =
-date-alt = " %Y-%m-%d"
+date = " %a %Y-%m-%d"
+date-alt =
 
 time = %H:%M:%S
 time-alt = %H:%M:%S
@@ -321,10 +329,10 @@ type = internal/pulseaudio
 
 format-volume = <ramp-volume> <label-volume>
 label-volume = %percentage%%
-label-volume-foreground = ${root.foreground}
+label-volume-foreground = ${colors.color0E}
 
 label-muted =  nil
-label-muted-foreground = #666
+label-muted-foreground = ${colors.foreground-alt}
 
 ramp-volume-0 = 
 ramp-volume-1 = 

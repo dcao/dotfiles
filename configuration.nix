@@ -39,10 +39,11 @@
     acpilight.enable = true;
     bluetooth = {
       enable = true;
-      extraConfig = ''
-        [General]
-        Enable=Source,Sink,Media,Socket
-      '';
+      config = {
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+        };
+      };
     };
 
     trackpoint = {
@@ -63,8 +64,9 @@
   networking = {
     hostName = "boomerang";
     wireless.enable = true;
-    connman.enable = true;
   };
+
+  services.connman.enable = true;
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -88,7 +90,8 @@
     coreutils gitAndTools.gitFull htop
     wget curl zip unzip tree bc
     gcc pkg-config binutils ccache gnumake
-    libinput-gestures ripgrep
+    libinput-gestures ripgrep xorg.xmodmap
+    (polybar.override { mpdSupport = true; pulseSupport = true; })
 
     # fs
     ntfs3g exfat
@@ -155,22 +158,25 @@
   # Enable the X11 windowing system.
   services.xserver = {
     enable = true;
+    exportConfiguration = true;
     layout = "us";
-    xkbOptions = "eurosign:e";
     autoRepeatDelay = 200;
     autoRepeatInterval = 25;
     videoDrivers = [ "intel" ];
 
-    displayManager.gdm = {
-      enable = true;
+    displayManager = {
+      gdm = {
+        enable = true;
+      };
     };
     
-    windowManager.awesome = {
+    windowManager.herbstluftwm = {
       enable = true;
     };
 
     libinput = {
       enable = true;
+      dev = "/dev/input/event6";
       accelProfile = "flat";
       naturalScrolling = true;
       disableWhileTyping = true;

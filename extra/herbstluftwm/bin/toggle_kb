@@ -1,0 +1,20 @@
+#!/bin/sh
+
+file="/tmp/aplkb"
+
+if [ -f $file ]; then
+    var=`cat $file`
+    if [ $var = "0" ]; then
+        xmodmap ~/.files/layouts/apl
+        echo 1 > $file
+        notify-send -u low "kb" "apl layout enabled"
+    else
+        setxkbmap -layout us
+        echo 0 > $file
+        notify-send -u low "kb" "apl layout disabled"
+    fi
+else
+    xmodmap ~/.files/layouts/apl
+    echo 1 > $file
+    notify-send -u low "kb" "apl layout enabled"
+fi

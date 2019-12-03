@@ -45,6 +45,8 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
  tab-width 4                                      ; Set width for tabs
  uniquify-buffer-name-style 'forward              ; Uniquify buffer names
  use-dialog-box nil
+ help-at-pt-display-when-idle t
+ help-at-pt-timer-delay 0
  window-combination-resize t                      ; Resize windows proportionally
  x-stretch-cursor t                               ; Stretch cursor to the glyph width
  frame-title-format '((:eval (if (buffer-file-name)
@@ -53,6 +55,8 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 
 (setq
  use-package-always-ensure t)
+
+(help-at-pt-set-timer)
 
 ;; Put autosaves in emacs-saves
 (setq auto-save-file-name-transforms
@@ -546,13 +550,14 @@ Adding a keybind to show git info:
 
 (setq org-agenda-files `(,dcao/org-root)
       org-archive-location (concat dcao/org-root "archive/%s::")
-      org-agenda-span 1
+      org-agenda-span 7
       org-agenda-start-on-weekday nil
       org-log-done 'time
       org-log-into-drawer t
       org-expiry-inactive-timestamps t
       org-default-priority ?C
       org-lowest-priority ?D
+      org-preview-latex-default-process 'imagemagick ; faster
       ;; refile
       org-refile-targets '((org-agenda-files :maxlevel . 5))
       org-refile-use-outline-path 'file
@@ -570,6 +575,14 @@ Adding a keybind to show git info:
          ,dcao/org-song-rec-template)
         ("r" "weekly review" entry (file+headline ,(concat dcao/org-root "review.org") ,(format-time-string "%Y"))
          ,dcao/org-weekly-review-template)))
+#+END_SRC
+**** Agenda modifications
+I want to have a line above every day in the agenda. This does that:
+#+BEGIN_SRC emacs-lisp
+(setq org-agenda-format-date (lambda (date) (concat "\n"
+                                                    (make-string (window-width) 9472)
+                                                    "\n"
+                                                    (org-agenda-format-date-aligned date))))
 #+END_SRC
 *** Fix newline/indent in src blocks
 #+BEGIN_SRC emacs-lisp
@@ -827,28 +840,270 @@ is nil, refile in the current file."
         (org-paste-subtree 4)
         (widen)))))
   #+END_SRC
-*** org-timeline
+*** Fixing stupid angle brackets in source blocks
+Angle brackets are highlighted as mismatched brackets, but it's just comparisons!!
 #+BEGIN_SRC emacs-lisp
-;; We define a new insert timeline function, modelled after the og
-;; org-timeline-insert-timeline, except we always insert at the
-;; beginning of the buffer
-(defun dcao/org-timeline-insert-timeline ()
+(defun org-mode-<>-syntax-fix (start end)
+  "Change syntax of characters ?< and ?> to symbol within source code blocks."
+  (let ((case-fold-search t))
+    (when (eq major-mode 'org-mode)
+      (save-excursion
+        (goto-char start)
+        (while (re-search-forward "<\\|>" end t)
+          (when (save-excursion
+                  (and
+                   (re-search-backward "[[:space:]]*#\\+\\(begin\\|end\\)_src\\_>" nil t)
+                   (compare-strings (match-string 1) nil nil "begin" nil nil t)))
+            ;; This is a < or > in an org-src block
+            (put-text-property (point) (1- (point))
+                               'syntax-table (string-to-syntax "_"))))))))
+
+(defun org-setup-<>-syntax-fix ()
+  "Setup for characters ?< and ?> in source code blocks.
+Add this function to `org-mode-hook'."
+  (setq syntax-propertize-function 'org-mode-<>-syntax-fix)
+  (syntax-propertize (point-max)))
+
+(add-hook 'org-mode-hook #'org-setup-<>-syntax-fix)
+#+END_SRC
+*** org-timeline
+This is the code for org-timeline from https://github.com/deopurkar/org-timeline.
+
+We're copy-pasting to use the fork of org-timeline with more stuff. We also make
+some of our own changes:
+- Include todos with deadline ranges.
+- Fix bug with tasks that cross the date threshold (12am) - they're no longer offset
+- Fix bug with tasks that cross the date and line threshold - it no longer crashes
+- If an item is DONE, it can't be conflicted with
+#+BEGIN_SRC emacs-lisp
+;;; org-timeline.el --- Add graphical view of agenda to agenda buffer. -*- lexical-binding: t -*-
+
+;; Copyright (C) 2017 Matúš Goljer
+
+;; Author: Matúš Goljer <matus.goljer@gmail.com>
+;; Maintainer: Matúš Goljer <matus.goljer@gmail.com>
+;; Version: 0.3.0
+;; Created: 16th April 2017
+;; Package-requires: ((dash "2.13.0") (emacs "24.3"))
+;; Keywords: calendar
+;; URL: https://github.com/Fuco1/org-timeline/
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License
+;; as published by the Free Software Foundation; either version 3
+;; of the License, or (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Add graphical view of agenda to agenda buffer.
+
+;; This package adds a graphical view of the agenda after the last
+;; agenda line.  By default the display starts at 5 AM today and
+;; goes up to 4 AM next day (this covers 24 hours).
+
+;; Scheduled tasks or tasks with time ranges are rendered in the
+;; display with `org-timeline-block' face.  Clocked entires are
+;; displayed in `org-timeline-clocked' face.  The background of
+;; timeslots which are in the past is highlighted with
+;; `org-timeline-elapsed' face.
+
+;; You can use custom color for a task by adding the property
+;; `TIMELINE_FACE' with either a string which is a color name or a
+;; list which specifies the face properties or a symbol which is
+;; taken to be a face name.
+
+;;; Code:
+
+(require 'dash)
+
+(require 'org-agenda)
+
+(defgroup org-timeline ()
+  "Graphical view of agenda in agenda buffer."
+  :group 'org
+  :prefix "org-timeline-")
+
+(defgroup org-timeline-faces ()
+  "Faces for org-timeline."
+  :group 'org-timeline)
+
+(defface org-timeline-block
+  '((t (:background "CadetBlue")))
+  "Face used for printing blocks with time range information.
+
+These are blocks that are scheduled for specific time range or
+have an active timestamp with a range."
+  :group 'org-timeline-faces)
+
+(defface org-timeline-conflict
+  '((t (:background "OrangeRed")))
+  "Face used for printing conflicting blocks with time range information."
+  :group 'org-timeline-faces)
+
+(defface org-timeline-elapsed
+  '((t (:inherit default)))
+  "Face used for highlighting elapsed portion of the day."
+  :group 'org-timeline-faces)
+
+(defface org-timeline-clocked
+  '((t (:background "DarkOliveGreen")))
+  "Face used for printing clocked blocks.
+
+Clocked blocks appear in the agenda when `org-agenda-log-mode' is
+activated."
+  :group 'org-timeline-faces)
+
+(defcustom org-timeline-default-duration
+  nil
+  "Default event duration for org-timeline")
+
+(defmacro org-timeline-with-each-line (&rest body)
+  "Execute BODY on each line in buffer."
+  (declare (indent 0)
+           (debug (body)))
+  `(save-excursion
+     (goto-char (point-min))
+     ,@body
+     (while (= (forward-line) 0)
+       ,@body)))
+
+(defun org-timeline--get-face ()
+  "Get the face with which to draw the current block."
+  (--if-let (org-entry-get (org-get-at-bol 'org-marker) "TIMELINE_FACE" t)
+      (let ((read-face (car (read-from-string it))))
+        (if (stringp read-face)
+            (list :background read-face)
+          read-face))
+    (cond
+     ((save-excursion
+        (search-forward "Clocked:" (line-end-position) t))
+      'org-timeline-clocked)
+     ((face-at-point)
+      `((:background ,(face-attribute (face-at-point) ':foreground nil 'default))))
+     (t 'org-timeline-block))))
+
+(defun org-timeline--add-elapsed-face (string current-offset)
+  "Add `org-timeline-elapsed' to STRING's elapsed portion.
+
+Return new copy of STRING."
+  (let ((string-copy (copy-sequence string)))
+    (when (< 0 current-offset)
+      (put-text-property 0 current-offset 'font-lock-face 'org-timeline-elapsed string-copy))
+    string-copy))
+
+(defun org-timeline--generate-timeline ()
+  "Generate the timeline string that will represent current agenda view."
+  (let* ((start-offset 260) ; offset of calendar. a start offset of 60 sets the beginning to 00:00. Each increment of 10 corresponds to an extra 15 minutes.
+         (current-time (+ (* 60 (string-to-number (format-time-string "%H")))
+                          (string-to-number (format-time-string "%M"))))
+         (current-offset (/ (- current-time start-offset) 10))
+         (slotline (org-timeline--add-elapsed-face
+                    "|     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |"
+                    current-offset))
+         (hourline (org-timeline--add-elapsed-face
+                    "   |05:00|06:00|07:00|08:00|09:00|10:00|11:00|12:00|13:00|14:00|15:00|16:00|17:00|18:00|19:00|20:00|21:00|22:00|23:00|00:00|01:00|02:00|03:00|04:00|"
+                    current-offset))
+         (tasks nil))
+    (org-timeline-with-each-line
+      (-when-let* ((time-of-day (org-get-at-bol 'time-of-day))
+                   (marker (org-get-at-bol 'org-marker))
+                   (type (org-get-at-bol 'type))
+                   (name (org-get-at-bol 'txt)))
+        (when (member type (list "scheduled" "clock" "deadline" "timestamp"))
+          (let ((duration (or (org-get-at-bol 'duration)
+                              org-timeline-default-duration
+                              0))
+                (is-done (eql (org-get-at-bol 'face) (org-get-at-bol 'done-face))))
+            (when (and (numberp duration)            
+                       (< duration 0))            ;; This is events at midnight
+              (cl-incf duration 1440))
+
+            (let* ((hour (/ time-of-day 100))     ;; time-of-day is in HHMM notation
+                   (minute (mod time-of-day 100))
+                   (day-of-month (if (string= type "deadline") (org-get-at-bol 'date) (calendar-absolute-from-gregorian (org-get-at-bol 'date))))
+                   (beg (+ (* day-of-month 1440) (* hour 60) minute))
+                   (end (round (+ beg duration)))
+                   (face (org-timeline--get-face)))
+              (push (list beg end face name is-done) tasks))))))
+
+    (setq tasks (nreverse tasks))
+    (cl-labels ((get-start-pos (current-line beg) (+ 1 (* current-line (1+ (length hourline))) (/ (- beg start-offset) 10)))
+                (get-end-pos (current-line end) (+ 1 (* current-line (1+ (length hourline))) (/ (- end start-offset) 10))))
+      (let ((current-line 1)
+            (current-line-offset 0)
+            (current-day nil))
+        (with-temp-buffer
+          (insert hourline)
+          (-each tasks
+            (-lambda ((beg end face name is-done))
+              (let* ((spans-multi-days (not (eq (/ beg 1440) (/ end 1440))))
+                     (offset-to-mins (/ (* 3 (- start-offset 60)) 2))
+                     (next-line-from-beg (+ beg offset-to-mins (- (if (<= (% beg 1440) offset-to-mins) 0 1440) (% beg 1440))))
+                     (spans-multi-lines (>= end next-line-from-beg))
+                     (new-current-day (/ beg 1440))
+                     (beg-in-day (% beg 1440))
+                     (end-in-day (if spans-multi-days (+ 1440 (% end 1440)) (% end 1440))))
+                (when (not current-day)
+                  (setq current-day new-current-day)
+                  (insert "\n" (calendar-day-name (mod current-day 7) t t) slotline))
+                (while (< current-day new-current-day)               ;; We have advanced a day
+                  (cl-incf current-line)
+                  (cl-incf current-day)
+                  (save-excursion
+                    (goto-char (point-max))
+                    (insert "\n" (calendar-day-name (mod current-day 7) t t) slotline)))
+                (let ((start-pos (if (< (% beg 1440) offset-to-mins) (get-start-pos (- current-line 1) (+ 1440 beg-in-day)) (get-start-pos current-line beg-in-day)))
+                      (end-pos (if (and spans-multi-days spans-multi-lines)
+                                   (progn
+                                        ; Because of the limits of time ranges, this will execute once.
+                                        ; But for future-proofing's sake :>
+                                     (dotimes (i (- (/ end 1440) (/ beg 1440)))
+                                       (cl-incf current-line)
+                                       (cl-incf current-day)
+                                       (save-excursion
+                                         (goto-char (point-max))
+                                         (insert "\n" (calendar-day-name (mod current-day 7) t t) slotline)))
+                                     (get-end-pos current-line (- end-in-day 1440)))
+                                 (get-end-pos current-line end-in-day))))
+                  (if (and (not is-done) (or (get-text-property start-pos 'org-timeline-occupied)
+                                             (get-text-property end-pos 'org-timeline-occupied)))
+                      (put-text-property start-pos end-pos 'font-lock-face 'org-timeline-conflict)  ;; Warning face for conflicts
+                    (put-text-property start-pos end-pos 'font-lock-face face))
+                  (unless is-done (put-text-property start-pos end-pos 'org-timeline-occupied t))
+                  (when name
+                    (put-text-property start-pos end-pos 'help-echo name))))))
+          (buffer-string))))))
+
+(defun org-timeline-insert-timeline ()
+  "Insert graphical timeline into agenda buffer."
+  (interactive)
   (unless (buffer-narrowed-p)
     (goto-char (point-min))
     (while (and (eq (get-text-property (line-beginning-position) 'org-agenda-type) 'agenda)
                 (not (eobp)))
       (forward-line))
     (forward-line)
-    (goto-char (point-min))
-    (let ((inhibit-read-only t))
-      (insert (org-timeline--generate-timeline))
+    (let ((inhibit-read-only t)
+          (tl (org-timeline--generate-timeline)))
+      (goto-char (point-min)) ; insert timeline at start
+      (insert tl)
       (insert (propertize (concat "\n" (make-string (/ (window-width) 2) ?─)) 'face 'org-time-grid) "\n"))
     ;; enable `font-lock-mode' in agenda view to display the "chart"
     (font-lock-mode)))
 
-(use-package org-timeline
-  :config
-  (add-hook 'org-agenda-finalize-hook 'dcao/org-timeline-insert-timeline :append))
+(provide 'org-timeline)
+;;; org-timeline.el ends here
+(add-hook 'org-agenda-finalize-hook 'org-timeline-insert-timeline :append)
+                                        ; To show all timed items
+(setq org-timeline-default-duration 15)
 #+END_SRC
 ** HTML
 #+BEGIN_SRC emacs-lisp
@@ -904,3 +1159,4 @@ is nil, refile in the current file."
     (elfeed-org)
     (setq rmh-elfeed-org-files (list (concat dcao/org-root "elfeed.org"))))
 #+END_SRC
+

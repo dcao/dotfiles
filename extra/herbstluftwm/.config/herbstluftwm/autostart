@@ -21,13 +21,12 @@ color0D='#83a598'
 color0E='#d3869b'
 color0F='#d65d0e'
 
-# nnn config
-NNN_NO_AUTOSELECT=1
-NNN_USE_EDITOR=1
-NNN_SHOW_HIDDEN=1
-NNN_CONTEXT_COLORS="4444"
-NNN_SCRIPT="/home/david/bin/nnn/"
-NNN_BMS="h:/home/david/;r://"
+# floating stuff
+floatmon=floatmon
+floattag=fl
+
+# keybindings
+Mod=Mod4   # Use the super key as the main modifier
 
 hc() {
     herbstclient "$@"
@@ -46,20 +45,17 @@ hc emit_hook reload
 # remove all existing keybindings
 hc keyunbind --all
 
-# keybindings
-Mod=Mod4   # Use the super key as the main modifier
-
 hc keybind $Mod-Shift-y quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-w close
 
 # programs
-hc keybind $Mod-Return       spawn alacritty
+hc keybind $Mod-Return       spawn st
 hc keybind $Mod-Shift-Return spawn ~/bin/rofi_tmux
-hc keybind Alt-p             spawn rofi-pass
+hc keybind Ctrl-Alt-p        spawn rofi-pass
 hc keybind Ctrl-Alt-f        spawn ~/bin/imgur-shot
-hc keybind $Mod-a            spawn alacritty -e ranger
-hc keybind $Mod-Shift-a      spawn alacritty -e nnn -d
+hc keybind $Mod-a            spawn st -e ranger
+hc keybind $Mod-Shift-a      spawn ~/bin/toggle_kb
 
 # Media
 hc keybind XF86AudioRaiseVolume spawn pactl set-sink-volume @DEFAULT_SINK@ +1%
@@ -73,7 +69,7 @@ hc new_attr bool my_mpd_scroll
 hc attr my_mpd_scroll true
 hc keybind $Mod-m chain , attr my_mpd_scroll toggle , spawn notify-send -u low "herbst" "mpd title scroll toggled"
 
-# feh --bg ~/.background-image &
+feh --bg-fill ~/.wall.jpg &
 
 # basic movement
 # focusing clients
@@ -116,6 +112,7 @@ hc keybind $Mod-Control-Right   resize right +$resizestep
 
 # tags
 hc set default_frame_layout 3
+hc set_layout 3
 
 tag_names=( {1..9} )
 tag_keys=( {1..9} 0 )
@@ -156,6 +153,8 @@ hc mousebind $Mod-Button1 move
 hc mousebind $Mod-Button2 zoom
 hc mousebind $Mod-Button3 resize
 
+hc set focus_follows_mouse 1
+
 # focus
 hc keybind $Mod-BackSpace   cycle_monitor
 hc keybind $Mod-Tab         spawn rofi -combi window,run -show combi
@@ -184,7 +183,7 @@ hc set frame_bg_transparent 0
 hc set frame_bg_active_color $color0D
 hc set frame_bg_normal_color $color0D
 hc set always_show_frame 1
-hc set frame_gap 16
+hc set frame_gap 4
 hc set frame_padding 0
 
 hc attr theme.active.color $color0C
@@ -207,12 +206,8 @@ hc set mouse_recenter_gap 0
 
 # rules
 hc unrule -F
-#hc rule class=XTerm tag=3 # move all xterms to tag 3
 hc rule focus=on # normally focus new clients
-#hc rule focus=off # normally do not focus new clients
-# give focus to most common terminals
-#hc rule class~'(.*[Rr]xvt.*|.*[Tt]erm|Konsole)' focus=on
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' monitor=$floatmon tag=$floattag
 hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' focus=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 
@@ -227,11 +222,21 @@ hc set tree_style '╾│ ├└╼─┐'
 hc set auto_detect_monitors 1
 
 # panel! requires polybar
+pkill polybar || true
 for monitor in $(xrandr --query | grep " connected" | cut -d" " -f1); do
     # start it on each monitor
     MONITOR=$monitor polybar --reload herbst &
 done
 
+# if hc silent ! get_attr my_not_first_autostart ; then
+#     source ~/.config/herbstluftwm/floatmon
+#     echo ""
+# fi
+
+source ~/.config/herbstluftwm/floatmon
+
 for monitor in $(hc list_monitors | cut -d":" -f1); do
-    hc pad $monitor 32
+    hc pad $monitor 0 0 36
 done
+
+hc silent new_attr bool my_not_first_autostart
