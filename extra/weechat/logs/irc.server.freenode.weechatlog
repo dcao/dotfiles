@@ -1,0 +1,117 @@
+2020-01-04 19:19:58	--	irc: connecting to server chat.freenode.net/6667...
+2020-01-04 19:19:58	--	irc: connected to chat.freenode.net/6667 (2001:708:40:2001::f5ee:d0de)
+2020-01-04 19:19:58	--	rajaniemi.freenode.net: *** Looking up your hostname...
+2020-01-04 19:19:59	--	rajaniemi.freenode.net: *** Checking Ident
+2020-01-04 19:19:59	--	rajaniemi.freenode.net: *** Couldn't look up your hostname
+2020-01-04 19:20:08	--	rajaniemi.freenode.net: *** No Ident response
+2020-01-04 19:20:08	--	Welcome to the freenode Internet Relay Chat Network dcao
+2020-01-04 19:20:08	--	Your host is rajaniemi.freenode.net[2001:708:40:2001::f5ee:d0de/6667], running version ircd-seven-1.1.7
+2020-01-04 19:20:08	--	This server was created Tue Sep 25 2018 at 13:21:15 UTC
+2020-01-04 19:20:08	--	rajaniemi.freenode.net ircd-seven-1.1.7 DOQRSZaghilopsuwz CFILMPQSbcefgijklmnopqrstuvz bkloveqjfI
+2020-01-04 19:20:08	--	CHANTYPES=# EXCEPTS INVEX CHANMODES=eIbq,k,flj,CFLMPQScgimnprstuz CHANLIMIT=#:120 PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 NETWORK=freenode STATUSMSG=@+ CALLERID=g CASEMAPPING=rfc1459 :are supported by this server
+2020-01-04 19:20:08	--	CHARSET=ascii NICKLEN=16 CHANNELLEN=50 TOPICLEN=390 DEAF=D FNC TARGMAX=NAMES:1,LIST:1,KICK:1,WHOIS:1,PRIVMSG:4,NOTICE:4,ACCEPT:,MONITOR: EXTBAN=$,ajrxz CLIENTVER=3.0 WHOX SAFELIST ELIST=CTU :are supported by this server
+2020-01-04 19:20:08	--	KNOCK CPRIVMSG CNOTICE ETRACE :are supported by this server
+2020-01-04 19:20:08	--	There are 103 users and 75382 invisible on 29 servers
+2020-01-04 19:20:08	--	36 :IRC Operators online
+2020-01-04 19:20:08	--	1 :unknown connection(s)
+2020-01-04 19:20:08	--	50368 :channels formed
+2020-01-04 19:20:08	--	I have 6121 clients and 1 servers
+2020-01-04 19:20:08	--	6121 9451 :Current local users 6121, max 9451
+2020-01-04 19:20:08	--	75485 92604 :Current global users 75485, max 92604
+2020-01-04 19:20:08	--	Highest connection count: 9452 (9451 clients) (177495 connections received)
+2020-01-04 19:20:08	--	- rajaniemi.freenode.net Message of the Day - 
+2020-01-04 19:20:08	--	- Welcome to rajaniemi.freenode.net in Helsinki, Finland.  Our thanks to
+2020-01-04 19:20:08	--	- Aalto University for sponsoring this server!
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- RAJANIEMI, Hannu  (1978-). Born in Ylivieska, Finland, Rajaniemi is the
+2020-01-04 19:20:08	--	- author of two novels and several short stories, and his debut novel 'The
+2020-01-04 19:20:08	--	- Quantum Thief' was nominated for the 2011 Locus Award for Best First
+2020-01-04 19:20:08	--	- Novel.  Rajaniemi lives in Edinburgh, Scotland where he is founding
+2020-01-04 19:20:08	--	- director of ThinkTank Maths, a commercial research organisation.
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- Welcome to freenode - supporting the free and open source
+2020-01-04 19:20:08	--	- software communities since 1998.
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- By connecting to freenode you indicate that you have read and
+2020-01-04 19:20:08	--	- accept our policies and guidelines as set out on https://freenode.net
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- In the event that you observe behaviour that contravenes our policies,
+2020-01-04 19:20:08	--	- please notify a volunteer staff member via private message, or send us an
+2020-01-04 19:20:08	--	- e-mail to complaints@freenode.net -- we will do our best to address the
+2020-01-04 19:20:08	--	- situation within a reasonable period of time, and we may request further
+2020-01-04 19:20:08	--	- information or, as appropriate, involve other parties such as channel operators 
+2020-01-04 19:20:08	--	- Group Contacts representing an on-topic group.
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- freenode runs an open proxy scanner.
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- If you are looking for assistance, you may be able to find a list of 
+2020-01-04 19:20:08	--	- volunteer staff on '/stats p' (shows only on-call staff) or by joining 
+2020-01-04 19:20:08	--	- #freenode and using the '/who freenode/staff/*' command. You may message
+2020-01-04 19:20:08	--	- any of us at any time. Please note that freenode predominantly provides 
+2020-01-04 19:20:08	--	- assistance via private message, and while we have a network channel the 
+2020-01-04 19:20:08	--	- primary venue for support requests is via private message to a member 
+2020-01-04 19:20:08	--	- of the volunteer staff team.
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- From time to time, volunteer staff may send server-wide notices relating to
+2020-01-04 19:20:08	--	- the project, or the communities that we host. The majority of such notices
+2020-01-04 19:20:08	--	- will be sent as wallops, and you can '/mode <yournick> +w' to ensure that you
+2020-01-04 19:20:08	--	- do not miss them. Important messages relating to the freenode project, including
+2020-01-04 19:20:08	--	- notices of upcoming maintenance and other scheduled downtime will be issued as
+2020-01-04 19:20:08	--	- global notices.
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- Representing an on-topic project? Don't forget to register, more information
+2020-01-04 19:20:08	--	- can be found on the https://freenode.net website under "Group Registration".
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- Thank you also to our server sponsors for the sustained support in keeping the
+2020-01-04 19:20:08	--	- network going for close to two decades.
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- Thank you to all of our attendees, sponsors, speakers, exhibitors, helpers,
+2020-01-04 19:20:08	--	- and everyone else who made this year's freenode #live conference amazing.
+2020-01-04 19:20:08	--	- https://freenode.net/news/live-2018
+2020-01-04 19:20:08	--	-  
+2020-01-04 19:20:08	--	- Thank you for using freenode!
+2020-01-04 19:20:08	--	End of /MOTD command.
+2020-01-04 19:20:08	--	User mode [+i] by dcao
+2020-01-04 19:20:08	--	freenode-connect (frigg@freenode/utility-bot/frigg): Welcome to freenode. To protect the network all new connections will be scanned for vulnerabilities. This will not harm your computer, and vulnerable hosts will be notified.
+2020-01-04 19:20:08	--	CTCP requested by freenode-connect: VERSION
+2020-01-04 19:20:08	--	CTCP reply to freenode-connect: VERSION WeeChat 2.6 (Sep  8 2019 06:13:58)
+2020-01-04 19:21:56	--	MSG(nickserv): help
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): ***** NickServ Help *****
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): NickServ allows users to 'register' a nickname, and stop
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): others from using that nick. NickServ allows the owner of a
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): nickname to disconnect a user from the network that is using
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): their nickname.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): 
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): For more information on a command, type:
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): /msg NickServ help <command>
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): For a verbose listing of all commands, type:
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): /msg NickServ help commands
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): 
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): The following commands are available:
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): GHOST           Reclaims use of a nickname.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): IDENTIFY        Identifies to services for a nickname.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): INFO            Displays information on registrations.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): LISTCHANS       Lists channels that you have access to.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): REGISTER        Registers a nickname.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): RELEASE         Releases a services enforcer.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): SENDPASS        Email registration passwords.
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): 
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): Other commands: ACC, ACCESS, CERT, DROP, HELP, LOGOUT,
+2020-01-04 19:21:57	--	NickServ (NickServ@services.):                 REGAIN, SETPASS, STATUS, TAXONOMY, VERIFY
+2020-01-04 19:21:57	--	NickServ (NickServ@services.): ***** End of Help *****
+2020-01-04 19:22:11	--	MSG(nickserv): register
+2020-01-04 19:22:12	--	NickServ (NickServ@services.): Insufficient parameters for REGISTER.
+2020-01-04 19:22:12	--	NickServ (NickServ@services.): Syntax: REGISTER <password> <email>
+2020-01-04 19:22:58	--	MSG(nickserv): register *********************************************
+2020-01-04 19:22:59	--	NickServ (NickServ@services.): An email containing nickname activation instructions has been sent to david@cao.sh.
+2020-01-04 19:22:59	--	NickServ (NickServ@services.): If you do not complete registration within one day, your nickname will expire.
+2020-01-04 19:22:59	--	NickServ (NickServ@services.): dcao is now registered to david@cao.sh, with the password WlfpYRwB4jrdSAjQpmsWZnRUrNhfuXiH.
+2020-01-04 19:22:59	--	NickServ (NickServ@services.): 
+2020-01-04 19:22:59	--	NickServ (NickServ@services.): For frequently-asked questions about the network, please see the
+2020-01-04 19:22:59	--	NickServ (NickServ@services.): Knowledge Base page (http://freenode.net/kb/all). Should you need more
+2020-01-04 19:22:59	--	NickServ (NickServ@services.): help you can /join #freenode to find network staff.
+2020-01-04 19:23:58	--	MSG(NickServ): VERIFY REGISTER *****************
+2020-01-04 19:23:59	--	NickServ (NickServ@services.): dcao has now been verified.
+2020-01-04 19:23:59	--	NickServ (NickServ@services.): Thank you for verifying your e-mail address! You have taken steps in ensuring that your registrations are not exploited.
+2020-01-04 19:40:13	--	irc: disconnected from server

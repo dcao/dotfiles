@@ -17,19 +17,57 @@ rec {
   nixpkgs = {
     config.allowUnfree = true;
     overlays = [
-      (import ./overlays/dcao.nix)
       (dyalogOverlay)
+      (import ./overlays/dcao.nix)
     ];
   };
 
   accounts.email = {
     accounts = {
-      cao = {
+      cao-sh = {
         primary = true;
+        address = "david@cao.sh";
+        userName = "david@cao.sh";
+        realName = "David Cao";
+        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/NameCheap Mail' | head -1";
+
+        gpg = {
+          key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
+        };
+
+        imap = {
+          host = "mail.privateemail.com";
+          port = 993;
+          tls = {
+            enable = true;
+          };
+        };
+
+        smtp = {
+          host = "mail.privateemail.com";
+          port = 465;
+          tls = {
+            enable = true;
+          };
+        };
+
+        notmuch.enable = true;
+        mbsync = {
+          enable = true;
+          patterns = [ "INBOX" ];
+        };
+        astroid = {
+          enable = true;
+          sendMailCommand = "msmtp --read-envelope-from --read-recipients";
+        };
+        msmtp.enable = true;
+      };
+
+      cao-st = {
         address = "david@cao.st";
         userName = "david@cao.st";
         realName = "David Cao";
-        passwordCommand = "pass 'Root/Gandi Mail' | head -1";
+        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/Gandi Mail' | head -1";
 
         gpg = {
           key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
@@ -63,35 +101,36 @@ rec {
         msmtp.enable = true;
       };
 
-      duhpster = {
-        address = "duhpster@gmail.com";
-        userName = "duhpster@gmail.com";
-        realName = "David Cao";
-        passwordCommand = "pass 'Root/duhpster-msmtp' | head -1";
+      # duhpster = {
+      #   address = "duhpster@gmail.com";
+      #   userName = "duhpster@gmail.com";
+      #   realName = "David Cao";
+      #   passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/duhpster-msmtp' | head -1";
 
-        gpg = {
-          key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
-        };
+      #   gpg = {
+      #     key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
+      #   };
 
-        flavor = "gmail.com";
+      #   flavor = "gmail.com";
 
-        notmuch.enable = true;
-        mbsync = {
-          enable = true;
-          patterns = [ "INBOX" ];
-        };
-        astroid = {
-          enable = true;
-          sendMailCommand = "msmtp --read-envelope-from --read-recipients";
-        };
-        msmtp.enable = true;
-      };
+      #   notmuch.enable = true;
+      #   mbsync = {
+      #     enable = true;
+      #     patterns = [ "INBOX" ];
+      #   };
+      #   astroid = {
+      #     enable = true;
+      #     sendMailCommand = "msmtp --read-envelope-from --read-recipients";
+
+      #   };
+      #   msmtp.enable = true;
+      # };
 
       ucsd = {
         address = "dmcao@ucsd.edu";
         userName = "dmcao@ucsd.edu";
         realName = "David Cao";
-        passwordCommand = "pass 'Root/TritonLink' | head -1";
+        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/TritonLink' | head -1";
 
         gpg = {
           key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
@@ -141,7 +180,12 @@ rec {
         ''
         test -e ${config.home.homeDirectory}/.config/aerc || $DRY_RUN_CMD ln -s ${dots}/extra/aerc ${config.home.homeDirectory}/.config/
         ''
-      );
+        );
+      linkWeechat = config.lib.dag.entryBefore [ "linkGeneration" ] (
+        ''
+        test -e ${config.home.homeDirectory}/.weechat || $DRY_RUN_CMD ln -s ${dots}/extra/weechat ${config.home.homeDirectory}/.weechat
+        ''
+        );
       setXDGSettings = config.lib.dag.entryBefore [ "linkGeneration" ] (
         ''
         # We already set $BROWSER so we don't need this
@@ -166,14 +210,17 @@ rec {
       nix-index sbcl python3 mpc_cli geckodriver
       tokei appimage-run androidenv.androidPkgs_9_0.platform-tools
       sent screen-message pinentry-qt aerc w3m
-      cachix haskellPackages.hpack slack
+      haskellPackages.hpack slack
       ledger hledger ledger-autosync python37Packages.ofxclient
       s3cmd maim feh xorg.xbacklight xorg.xfd gnome3.cheese
-      xclip dyalog xorg.xev gnuapl xorg.xwininfo
-
-      python37Packages.selenium
+      xclip xorg.xev gnuapl j xorg.xwininfo bench
+      signal-desktop proselint hyperfine dyalog vale
+      ride weechat bandwhich broot dos2unix
+      emscripten idris
 
       texlive.combined.scheme-full
+
+      cmake llvmPackages_9.clang-unwrapped llvmPackages_9.llvm libxml2 zlib
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
@@ -183,7 +230,7 @@ rec {
       })
 
       # acme
-      fortune cowsay lolcat cmatrix
+      fortune cowsay lolcat cmatrix libcaca
     ];
 
     file = {
@@ -195,6 +242,8 @@ rec {
         source = "${extra}/emacs/.doom.d";
         onChange = updateDoom;
       };
+      # We need this to add extra astroid config files
+      astroid = { source = "${extra}/astroid"; target = ".config/astroid/"; recursive = true; };
       emacs = { source = "${extra}/emacs/.emacs.d"; target = ".emacs.d/"; recursive = true; onChange = "rm ~/.emacs.d/config.el"; };
       qutebrowser = { source = "${extra}/qutebrowser"; target = "."; recursive = true; };
       herbstluftwm = { source = "${extra}/herbstluftwm"; target = "."; recursive = true; };
@@ -251,7 +300,7 @@ rec {
     git = {
       enable = true;
       userName = "David Cao";
-      userEmail = "david@cao.st";
+      userEmail = "david@cao.sh";
       signing = {
         key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
         signByDefault = true;
@@ -266,7 +315,10 @@ rec {
     notmuch = {
       enable = true;
       hooks = {
-        preNew = "mbsync --all";
+        preNew = ''
+        for x in ''$(notmuch search --output=files tag:deleted) ; do mv ''$x ''${x}T ; done
+        mbsync --all -Xm -Xs
+        '';
       };
       search.excludeTags = [ "deleted" "spam" "muted" ];
     };
@@ -349,7 +401,7 @@ rec {
         resurrect
       ];
       sensibleOnTop = true;
-      shortcut = "b";
+      shortcut = "z";
       terminal = "screen-256color";
       extraConfig = ''
         set -g mouse on
@@ -435,6 +487,8 @@ rec {
   };
 
   services = {
+    lorri.enable = true;
+
     gpg-agent = {
       enable = true;
       enableSshSupport = true;

@@ -62,8 +62,8 @@ hc keybind XF86AudioRaiseVolume spawn pactl set-sink-volume @DEFAULT_SINK@ +1%
 hc keybind XF86AudioLowerVolume spawn pactl set-sink-volume @DEFAULT_SINK@ -1%
 hc keybind XF86AudioMute spawn pactl set-sink-mute @DEFAULT_SINK@ toggle
 hc keybind XF86AudioMicMute spawn pactl @DEFAULT_SOURCE@ 1 toggle
-hc keybind XF86MonBrightnessUp spawn xbacklight -inc 5
-hc keybind XF86MonBrightnessDown spawn xbacklight -dec 5
+hc keybind XF86MonBrightnessUp spawn light -A 5
+hc keybind XF86MonBrightnessDown spawn light -U 5
 
 hc new_attr bool my_mpd_scroll
 hc attr my_mpd_scroll true
@@ -207,7 +207,7 @@ hc set mouse_recenter_gap 0
 # rules
 hc unrule -F
 hc rule focus=on # normally focus new clients
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' monitor=$floatmon tag=$floattag
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' monitor=$floatmon tag=$floattag focus=on
 hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' focus=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 
@@ -238,5 +238,20 @@ source ~/.config/herbstluftwm/floatmon
 for monitor in $(hc list_monitors | cut -d":" -f1); do
     hc pad $monitor 0 0 36
 done
+
+# autostart some programs
+if hc silent ! get_attr my_not_first_autostart ; then
+    RULES=( tag=1 )
+    spawn_with_rules emacs
+
+    RULES=( tag=2 )
+    spawn_with_rules qutebrowser
+
+    RULES=( tag=3 )
+    spawn_with_rules astroid
+
+    RULES=( tag=4 )
+    spawn_with_rules slack
+fi
 
 hc silent new_attr bool my_not_first_autostart

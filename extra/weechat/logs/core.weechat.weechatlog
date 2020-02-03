@@ -1,0 +1,144 @@
+2019-12-23 03:08:20		New key binding (context "default"): meta2-1;5P => /bar scroll buflist * -100%
+2019-12-23 03:08:20		New key binding (context "default"): meta2-1;5Q => /bar scroll buflist * +100%
+2019-12-23 03:08:20		New key binding (context "default"): meta-meta-OQ => /bar scroll buflist * e
+2019-12-23 03:08:20		New key binding (context "default"): meta2-1;3Q => /bar scroll buflist * e
+2019-12-23 03:08:20		New key binding (context "default"): meta2-1;3P => /bar scroll buflist * b
+2019-12-23 03:08:20		New key binding (context "default"): meta-meta-OP => /bar scroll buflist * b
+2019-12-23 03:08:20		New key binding (context "default"): meta-OQ => /bar scroll buflist * +100%
+2019-12-23 03:08:20		New key binding (context "default"): meta-OP => /bar scroll buflist * -100%
+2019-12-23 03:08:20		New key binding (context "default"): meta-meta2-12~ => /bar scroll buflist * e
+2019-12-23 03:08:20		New key binding (context "default"): meta-meta2-11~ => /bar scroll buflist * b
+2019-12-23 03:08:20		New key binding (context "default"): meta2-12^ => /bar scroll buflist * +100%
+2019-12-23 03:08:20		New key binding (context "default"): meta2-12~ => /bar scroll buflist * +100%
+2019-12-23 03:08:20		New key binding (context "default"): meta2-11^ => /bar scroll buflist * -100%
+2019-12-23 03:08:20		New key binding (context "default"): meta2-11~ => /bar scroll buflist * -100%
+2019-12-23 03:08:20		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2019-12-23 03:08:22	=!=	Error: unknown command "/clear" (type /help for help)
+2019-12-23 03:08:27		Option changed: weechat.look.mouse = on  (default: off)
+2019-12-23 03:08:39		fifo: pipe closed
+2019-12-23 03:11:17		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2019-12-23 03:11:22	=!=	You can not write text in this buffer
+2019-12-23 03:11:25		fifo: pipe closed
+2019-12-23 03:11:49		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2019-12-23 03:12:21		Option changed: weechat.look.prefix_suffix = "│"  (default: "|")
+2019-12-23 03:13:03		Option changed: weechat.bar.title.color_bg = black  (default: blue)
+2019-12-23 03:13:06		Option changed: weechat.bar.title.color_bg = blue
+2019-12-23 03:13:09		Option changed: weechat.bar.title.color_bg = gray  (default: blue)
+2019-12-23 03:13:12		Option changed: weechat.bar.title.color_bg = 24  (default: blue)
+2019-12-23 03:13:13		Option changed: weechat.bar.title.color_bg = 26  (default: blue)
+2019-12-23 03:13:15		Option changed: weechat.bar.title.color_bg = 0  (default: blue)
+2019-12-23 03:13:17		Option changed: weechat.bar.title.color_bg = 23  (default: blue)
+2019-12-23 03:13:18		Option changed: weechat.bar.title.color_bg = 3  (default: blue)
+2019-12-23 03:13:20		Option changed: weechat.bar.title.color_bg = 9  (default: blue)
+2019-12-23 03:13:22		Option changed: weechat.bar.title.color_bg = 12  (default: blue)
+2019-12-23 03:13:23		Option changed: weechat.bar.title.color_bg = 13  (default: blue)
+2019-12-23 03:13:24		Option changed: weechat.bar.title.color_bg = 14  (default: blue)
+2019-12-23 03:13:25		Option changed: weechat.bar.title.color_bg = 255  (default: blue)
+2019-12-23 03:13:27		Option changed: weechat.bar.title.color_bg = 245  (default: blue)
+2019-12-23 03:13:29		Option changed: weechat.bar.title.color_bg = 235  (default: blue)
+2019-12-23 03:13:31		Option changed: weechat.bar.title.color_bg = 240  (default: blue)
+2019-12-23 03:13:37		Option changed: weechat.bar.title.color_bg = 238  (default: blue)
+2019-12-23 03:13:53		Option changed: weechat.bar.buflist.color_bg = 238  (default: default)
+2019-12-23 03:13:57		Option changed: weechat.bar.buflist.color_bg = default
+2019-12-23 03:14:12		Option changed: weechat.bar.buflist.color_fg = 238  (default: default)
+2019-12-23 03:14:15		Option changed: weechat.bar.buflist.color_fg = default
+2019-12-23 03:14:21		Option changed: weechat.bar.buflist.color_delim = 238  (default: default)
+2019-12-23 03:14:23		Option changed: weechat.bar.buflist.color_delim = default
+2019-12-23 03:14:35		Option changed: weechat.bar.status.color_bg = 238  (default: blue)
+2019-12-23 03:14:38		Option changed: weechat.bar.status.color_bg = 236  (default: blue)
+2019-12-23 03:14:53		Option changed: weechat.bar.status.color_bg = 235  (default: blue)
+2019-12-23 03:14:54		Option changed: weechat.bar.status.color_bg = 236  (default: blue)
+2019-12-23 03:14:56		Option changed: weechat.bar.status.color_bg = 235  (default: blue)
+2019-12-23 03:14:59		Option changed: weechat.bar.status.color_bg = 236  (default: blue)
+2019-12-23 03:15:03		Option changed: weechat.bar.title.color_bg = 236  (default: blue)
+2019-12-23 03:15:59	=!=	Error: option "weechat.bar.buflist.color_hotlist" not found
+2019-12-23 03:17:55		fifo: pipe closed
+2019-12-23 03:18:31		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2019-12-23 03:18:40		fifo: pipe closed
+2019-12-23 03:18:56		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2019-12-23 03:20:19		Option changed: buflist.format.hotlist = "= " ${color:black}""  (default: " ${color:green}(${hotlist}${color:green})")
+2019-12-23 03:20:33		Option changed: buflist.format.hotlist = "= " ${color:green}($hotlist}${color:green})""  (default: " ${color:green}(${hotlist}${color:green})")
+2019-12-23 03:20:48	=!=	You can not write text in this buffer
+2019-12-23 03:20:52		Option changed: buflist.format.hotlist_none = "${color:236}"  (default: "${color:default}")
+2019-12-23 03:21:03		Option changed: buflist.format.hotlist_none = "${color:default}"
+2019-12-23 03:22:02		Option changed: buflist.format.buffer_current = "${format_buffer}"  (default: "${color:,blue}${format_buffer}")
+2019-12-23 03:22:10		Option changed: buflist.format.buffer_current = "${color:,236}${format_buffer}"  (default: "${color:,blue}${format_buffer}")
+2019-12-23 03:26:54		fifo: pipe closed
+2019-12-23 11:35:48		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2019-12-23 11:35:54	=!=	You can not write text in this buffer
+2019-12-23 11:39:52		fifo: pipe closed
+2020-01-03 12:09:14		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2020-01-03 12:09:20	=!=	Error: unknown command "/clear" (type /help for help)
+2020-01-03 12:09:24		fifo: pipe closed
+2020-01-04 19:17:11		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2020-01-04 19:17:14		fifo: pipe closed
+2020-01-04 19:17:39		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2020-01-04 19:17:42	=!=	Option "irc.server.nicks" not found (tip: you can use wildcard "*" in option to see a sublist)
+2020-01-04 19:18:45		Option changed: irc.server_default.nicks = "dcao,cao,cao.sh"  (default: "")
+2020-01-04 19:18:51		Option changed: irc.server_default.username = "dcao"  (default: "")
+2020-01-04 19:18:54		fifo: pipe closed
+2020-01-04 19:18:55		Plugins loaded: alias, buflist, charset, exec, fifo, fset, guile, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, xfer
+2020-01-04 19:19:49		irc: server freenode added
+2020-01-04 19:20:06		[core]
+2020-01-04 19:20:06		  away     command  filter   key      plugin   reload   set      version
+2020-01-04 19:20:06		  bar      cursor   help     layout   print    repeat   unset    wait   
+2020-01-04 19:20:06		  buffer   debug    history  mouse    proxy    save     upgrade  window 
+2020-01-04 19:20:06		  color    eval     input    mute     quit     secure   uptime 
+2020-01-04 19:20:06		[ruby]
+2020-01-04 19:20:06		  ruby
+2020-01-04 19:20:06		[python]
+2020-01-04 19:20:06		  python
+2020-01-04 19:20:06		[guile]
+2020-01-04 19:20:06		  guile
+2020-01-04 19:20:06		[lua]
+2020-01-04 19:20:06		  lua
+2020-01-04 19:20:06		[perl]
+2020-01-04 19:20:06		  perl
+2020-01-04 19:20:06		[tcl]
+2020-01-04 19:20:06		  tcl
+2020-01-04 19:20:06		[fset]
+2020-01-04 19:20:06		  fset
+2020-01-04 19:20:06		[trigger]
+2020-01-04 19:20:06		  trigger
+2020-01-04 19:20:06		[charset]
+2020-01-04 19:20:06		  charset
+2020-01-04 19:20:06		[alias]
+2020-01-04 19:20:06		  AAWAY    BYE      CLOSE    K        MSGBUF   REDRAW   UB       WC       WW     
+2020-01-04 19:20:06		  alias    C        EXIT     KB       MUB      SAY      UMODE    WI     
+2020-01-04 19:20:06		  ANICK    CHAT     IG       LEAVE    N        SIGNOFF  V        WII    
+2020-01-04 19:20:06		  BEEP     CL       J        M        Q        T        W        WM     
+2020-01-04 19:20:06		[exec]
+2020-01-04 19:20:06		  exec
+2020-01-04 19:20:06		[logger]
+2020-01-04 19:20:06		  logger
+2020-01-04 19:20:06		[spell]
+2020-01-04 19:20:06		  spell
+2020-01-04 19:20:06		[xfer]
+2020-01-04 19:20:06		  me  xfer
+2020-01-04 19:20:06		[fifo]
+2020-01-04 19:20:06		  fifo
+2020-01-04 19:20:06		[buflist]
+2020-01-04 19:20:06		  buflist
+2020-01-04 19:20:06		[irc]
+2020-01-04 19:20:06		  admin       die         lusers      ping        saquit      userhost  
+2020-01-04 19:20:06		  allchan     disconnect  map         pong        server      users     
+2020-01-04 19:20:06		  allpv       halfop      me          query       service     version   
+2020-01-04 19:20:06		  allserv     ignore      mode        quiet       servlist    voice     
+2020-01-04 19:20:06		  ban         info        motd        quote       squery      wallchops 
+2020-01-04 19:20:06		  cap         invite      msg         reconnect   squit       wallops   
+2020-01-04 19:20:06		  connect     ison        names       rehash      stats       who       
+2020-01-04 19:20:06		  ctcp        join        nick        remove      summon      whois     
+2020-01-04 19:20:06		  cycle       kick        notice      restart     time        whowas    
+2020-01-04 19:20:06		  dcc         kickban     notify      sajoin      topic     
+2020-01-04 19:20:06		  dehalfop    kill        op          samode      trace     
+2020-01-04 19:20:06		  deop        links       oper        sanick      unban     
+2020-01-04 19:20:06		  devoice     list        part        sapart      unquiet   
+2020-01-04 19:20:06		[relay]
+2020-01-04 19:20:06		  relay
+2020-01-04 19:20:06		[script]
+2020-01-04 19:20:06		  script
+2020-01-04 19:21:51	=!=	irc: command "msg" must be executed on irc buffer (server, channel or private)
+2020-01-04 19:22:08	=!=	Too few arguments for command "/msg" (help on command: /help msg)
+2020-01-04 19:24:06	=!=	Error: unknown command "/clear" (type /help for help)
+2020-01-04 19:28:31		Option changed: irc.server.freenode.autojoin = "#zig"  (default if null: "")
+2020-01-04 19:40:13		fifo: pipe closed

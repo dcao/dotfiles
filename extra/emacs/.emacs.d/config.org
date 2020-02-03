@@ -63,6 +63,9 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
   `((".*" "~/.emacs-saves/" t)))
 (setq backup-directory-alist '(("." . "~/.emacs-saves")))
 
+(setq max-lisp-eval-depth 5000)
+(setq max-specpdl-size 5000)
+
 (cd "~/")                                         ; Move to the user directory
 (delete-selection-mode 1)                         ; Replace region when inserting text
 (display-time-mode 0)                             ; Enable time in the mode-line
@@ -145,7 +148,9 @@ To show marks in the left fringe of the editor.
       "w j" 'evil-window-down
       "w k" 'evil-window-up
       "w l" 'evil-window-right
-      "x r" 'dcao/reload-config)
+      "x r" 'dcao/reload-config
+      "c w" 'count-words
+      "c r" 'count-words-region)
 
     (general-define-key
       :keymaps 'normal
@@ -196,7 +201,7 @@ To show marks in the left fringe of the editor.
   (setq
    doom-modeline-minor-modes t
    doom-modeline-major-mode-icon nil
-   doom-modeline-enable-word-count t
+   doom-modeline-enable-word-count nil
    doom-modeline-indent-info t
    doom-modeline-checker-simple-format t))
 #+END_SRC
@@ -313,7 +318,6 @@ To show marks in the left fringe of the editor.
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm
-  :after hide-mode-line
   :commands (helm-find-files-1 helm-org-rifle-agenda-files)
   :delight helm-mode
   :preface
@@ -404,7 +408,8 @@ Adding a keybind to show git info:
    "s e" 'yas-visit-snippet-file)
   :config
   (setq yas-snippet-dirs '("~/.files/extra/emacs/.emacs.d/snippets"))
-  (yas-global-mode 1))
+  (yas-global-mode 1)
+  (yas-reload-all))
 #+END_SRC
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
@@ -525,6 +530,12 @@ Adding a keybind to show git info:
 :END:
 %i")
 
+(defvar dcao/org-brain-template "* %^{title}
+:PROPERTIES:
+:CREATED: %U
+:END:
+%i")
+
 (defvar dcao/org-contact-template "* %^{Name}
 :PROPERTIES:
 :BIRTHDAY: %^{DOB (yyyy-mm-dd)}
@@ -569,6 +580,8 @@ Adding a keybind to show git info:
       org-capture-templates
       `(("t" "inbox todo" entry (file ,(concat dcao/org-root "inbox.org"))
          ,dcao/org-inbox-template)
+        ("b" "brain entry" entry (file ,(concat dcao/org-root "brain/index.org"))
+         ,dcao/org-brain-template)
         ("c" "contact" entry (file ,(concat dcao/org-root "inbox.org"))
          ,dcao/org-contact-template)
         ("s" "song rec" entry (file+headline ,(concat dcao/org-root "lt.org") "Song rec")
@@ -768,6 +781,7 @@ If on a:
    "x" 'org-export-dispatch
    "t" 'org-todo
    "m" 'org-time-stamp
+   "l" 'org-insert-link
    "c" '(:ignore t :which-key "clock")
    "c i" 'org-clock-in
    "c o" 'org-clock-out)
@@ -775,6 +789,7 @@ If on a:
   :config
   (use-package org-contacts :ensure nil)
   (use-package org-habit :ensure nil)
+  (use-package org-expiry :ensure nil)
   (add-hook 'org-mode-hook #'org-indent-mode)
   (advice-add #'org-return-indent :after #'dcao/fix-newline-and-indent-in-src-blocks)
   (advice-add 'org-refile :after
@@ -840,6 +855,45 @@ is nil, refile in the current file."
         (org-paste-subtree 4)
         (widen)))))
   #+END_SRC
+*** org-brain
+#+begin_src emacs-lisp
+(defun dcao/capture-add-id ()
+  (let ((key  (plist-get org-capture-plist :key))
+        (desc (plist-get org-capture-plist :description)))
+    (when (and (not org-note-abort) (equal key "b"))
+      (org-id-get-create))))
+
+(add-hook 'org-capture-prepare-finalize-hook 'dcao/capture-add-id)
+
+(push '("e" "brain edit" plain (function org-brain-goto-end)
+        "* %i%?" :empty-lines 1)
+      org-capture-templates)
+
+(use-package org-brain
+  :general
+  (:states 'normal
+   :prefix dcao/leader-key
+   "o v" 'org-brain-visualize
+   "o b d" 'org-brain-delete-entry)
+  
+  (:states 'normal
+   :keymaps 'org-mode-map
+   :prefix dcao/local-leader-key
+   "R" 'org-brain-refile)
+  
+  :init
+  (setq org-brain-path (concat dcao/org-root "brain"))
+  (with-eval-after-load 'evil
+    (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
+
+  :config
+  (setq org-id-track-globally t)
+  (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
+  (setq org-brain-visualize-default-choices 'all)
+  (setq org-brain-title-max-length 60)
+  (setq org-brain-include-file-entries t
+        org-brain-file-entries-use-title nil))
+#+end_src
 *** Fixing stupid angle brackets in source blocks
 Angle brackets are highlighted as mismatched brackets, but it's just comparisons!!
 #+BEGIN_SRC emacs-lisp
@@ -864,7 +918,8 @@ Add this function to `org-mode-hook'."
   (setq syntax-propertize-function 'org-mode-<>-syntax-fix)
   (syntax-propertize (point-max)))
 
-(add-hook 'org-mode-hook #'org-setup-<>-syntax-fix)
+; doesn't work for now?
+; (add-hook 'org-mode-hook #'org-setup-<>-syntax-fix)
 #+END_SRC
 *** org-timeline
 This is the code for org-timeline from https://github.com/deopurkar/org-timeline.
@@ -1126,6 +1181,19 @@ Return new copy of STRING."
 (use-package yaml-mode
   :mode (("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)))
+#+END_SRC
+** C
+#+BEGIN_SRC emacs-lisp
+(setq c-default-style "k&r"
+      c-basic-offset 4)
+
+(use-package flycheck-pkg-config
+  :commands (flycheck-pkg-config))
+#+END_SRC
+** Zig
+#+BEGIN_SRC emacs-lisp
+(use-package zig-mode
+  :mode (("\\.zig\\'" . zig-mode)))
 #+END_SRC
 * Apps
 ** calfw

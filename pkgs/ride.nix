@@ -87,22 +87,22 @@ let
     unpackPhase = "dpkg-deb -x $src .";
 
     installPhase = ''
-      mkdir -p $out/
-      mv opt/ride-${shortVersion}/* $out/
+      mkdir -p $out/whatever
+      mv opt/ride-${shortVersion}/* $out/whatever/
 
       mkdir $out/bin
       cp ${electronLauncher} $out/bin/ride
-      sed -i -e "s|TODO|$out|" $out/bin/ride
+      sed -i -e "s|TODO|$out/whatever|" $out/bin/ride
     '';
 
     preFixup = ''
-      for lib in $out/*.so; do
+      for lib in $out/whatever/*.so; do
         patchelf --set-rpath "${libPath}" $lib
       done
 
-      for bin in $out/Ride-${shortVersion}; do
+      for bin in $out/whatever/Ride-${shortVersion}; do
         patchelf --set-interpreter $(cat $NIX_CC/nix-support/dynamic-linker) \
-                 --set-rpath "$out:${libPath}" \
+                 --set-rpath "$out/whatever:${libPath}" \
                  $bin
       done
     '';

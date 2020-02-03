@@ -176,7 +176,7 @@
 
     libinput = {
       enable = true;
-      dev = "/dev/input/event6";
+      dev = "/dev/input/event14";
       accelProfile = "flat";
       naturalScrolling = true;
       disableWhileTyping = true;
