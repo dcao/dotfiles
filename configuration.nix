@@ -23,7 +23,7 @@
 
   # Use the systemd-boot EFI boot loader.
   boot = {
-    kernelPackages = pkgs.linuxPackages_5_3;
+    kernelPackages = pkgs.linuxPackages_5_6;
     loader = {
       systemd-boot.enable = true;
       efi = {
@@ -105,6 +105,8 @@
 
   programs.fish.enable = true;
 
+  programs.adb.enable = true;
+
   # swapfile stuff
   swapDevices = [
     { device = "/swapfile1"; size = 8192; }
@@ -164,15 +166,17 @@
     autoRepeatInterval = 25;
     videoDrivers = [ "intel" ];
 
-    displayManager = {
-      gdm = {
-        enable = true;
-      };
-    };
-    
-    windowManager.herbstluftwm = {
-      enable = true;
-    };
+    # displayManager = {
+    #   gdm = {
+    #     enable = true;
+    #   };
+    # };
+    # 
+    # windowManager.herbstluftwm = {
+    #   enable = true;
+    # };
+
+    displayManager.startx.enable = true;
 
     libinput = {
       enable = true;
@@ -224,7 +228,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.david = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "video" "input" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "video" "input" "adbusers" ]; # Enable ‘sudo’ for the user.
     shell = pkgs.fish;
   };
 

@@ -1,0 +1,4 @@
+# key: c"
+# name: corner-quotes
+# --
+\left\ulcorner $1 \right\urcorner$0

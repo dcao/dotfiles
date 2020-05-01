@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: in
-# key: in
+# name: lor
+# key: |
 # --
-\in
+\lor

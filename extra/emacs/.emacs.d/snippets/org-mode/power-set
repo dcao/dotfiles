@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: power-set
+# key: Pow
+# --
+\mathcal{P}

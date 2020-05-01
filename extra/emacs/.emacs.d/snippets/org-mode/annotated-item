@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: annotated-item
+# key: tt
+# --
+\stackrel{$1}{$2}$0

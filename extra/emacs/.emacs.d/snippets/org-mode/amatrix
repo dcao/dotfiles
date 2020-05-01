@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: amatrix
+# key: amat
+# --
+$3\begin{amatrix}{$1}$2\end{bmatrix}$0

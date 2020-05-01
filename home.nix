@@ -191,6 +191,12 @@ rec {
         # We already set $BROWSER so we don't need this
         # xdg-settings set default-web-browser qutebrowser.desktop
         ''
+        );
+      fixZoomSSO = config.lib.dag.entryBefore [ "linkGeneration" ] (
+        ''
+        # see nixpkgs #73532
+        echo "embeddedBrowserForSSOLogin=false" > ~/.config/zoomus.conf
+        ''
       );
     };
 
@@ -202,10 +208,10 @@ rec {
       sxiv cmst libreoffice discord libnotify
       ranger qbittorrent aspell darktable mpv
       blueman spotify nix-prefetch-github
-      youtube-dl mako jq steam imgur-sh
+      youtube-dl mako jq imgur-sh
       wl-clipboard fzf hugo pandoc ffmpeg
       ipe anki scribus neofetch imagemagick
-      arduino keybase-gui exa firefox cabal2nix
+      arduino keybase-gui exa firefox-esr-68 cabal2nix
       woeusb nix-prefetch-git jpegoptim woff2
       nix-index sbcl python3 mpc_cli geckodriver
       tokei appimage-run androidenv.androidPkgs_9_0.platform-tools
@@ -216,7 +222,11 @@ rec {
       xclip xorg.xev gnuapl j xorg.xwininfo bench
       signal-desktop proselint hyperfine dyalog vale
       ride weechat bandwhich broot dos2unix
-      emscripten idris
+      emscripten openssl nix-npm-install
+      graphviz kona rlwrap audacity zoom-us
+      chromium stack gdb flameshot
+
+      dcao-sh
 
       texlive.combined.scheme-full
 
@@ -244,7 +254,7 @@ rec {
       };
       # We need this to add extra astroid config files
       astroid = { source = "${extra}/astroid"; target = ".config/astroid/"; recursive = true; };
-      emacs = { source = "${extra}/emacs/.emacs.d"; target = ".emacs.d/"; recursive = true; onChange = "rm ~/.emacs.d/config.el"; };
+      emacs = { source = "${extra}/emacs"; target = "."; recursive = true; onChange = "rm ~/.emacs.d/config.el"; };
       qutebrowser = { source = "${extra}/qutebrowser"; target = "."; recursive = true; };
       herbstluftwm = { source = "${extra}/herbstluftwm"; target = "."; recursive = true; };
       ranger = { source = "${extra}/ranger"; target = "."; recursive = true; };

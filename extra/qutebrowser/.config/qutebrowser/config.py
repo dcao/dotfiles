@@ -247,7 +247,7 @@ c.colors.tabs.selected.even.fg = base00
 # Background color of selected even tabs.
 c.colors.tabs.selected.even.bg = base05
 
-c.fonts.monospace = '"Iosevka", ' + c.fonts.monospace
+c.fonts.web.family.fixed = '"Iosevka", ' + c.fonts.web.family.fixed
 c.fonts.completion.category = "bold 11pt monospace"
 c.fonts.completion.entry = "11pt monospace"
 c.fonts.debug_console = "11pt monospace"
