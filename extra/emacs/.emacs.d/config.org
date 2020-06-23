@@ -362,8 +362,8 @@ one, an error is signaled."
   (setq exwm-randr-workspace-output-plist
         '(0 "eDP1"
           1 "HDMI2"
-          2 "eDP1"
-          3 "eDP1"
+          2 "HDMI2"
+          3 "HDMI2"
           4 "eDP1"
           5 "eDP1"
           6 "eDP1"
@@ -1539,6 +1539,10 @@ Return new copy of STRING."
          ((org-ql-block '(and (todo) (tags-local "focus"))
                         ((org-ql-block-header "focus")))
           (agenda)))))
+
+(defadvice org-agenda (around split-vertically activate)
+  (let ((split-width-threshold 120))  ; or whatever width makes sense for you
+    ad-do-it))
 #+end_src
 *** texfrag
 #+begin_src emacs-lisp

@@ -13,6 +13,7 @@ self: super:
   lightworks = super.callPackage ../pkgs/lightworks.nix {};
   ride = super.callPackage ../pkgs/ride.nix {};
   selenium-legacy = super.callPackage ../pkgs/selenium-legacy.nix {};
+  cvc4 = super.callPackage ../pkgs/cvc4 {};
 
   nix-npm-install = super.writeScriptBin "nix-npm-install" ''
       #!/usr/bin/env bash

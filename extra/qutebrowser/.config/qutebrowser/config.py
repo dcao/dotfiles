@@ -284,6 +284,7 @@ config.bind('gM', 'spawn mpv {url}')
 config.bind(';m', 'hint links spawn mpv {hint-url}')
 config.bind('gs', 'spawn --userscript readability')
 config.bind('wi', 'inspector')
+config.bind('gF', 'hint links run :open -p {hint-url}')
 
 c.url.searchengines = {
     "DEFAULT": "https://www.google.com/search?hl=en&q={}",

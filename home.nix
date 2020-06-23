@@ -130,7 +130,7 @@ rec {
         address = "dmcao@ucsd.edu";
         userName = "dmcao@ucsd.edu";
         realName = "David Cao";
-        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/TritonLink' | head -1";
+        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/TritonLink' | sed '4q;d' | awk '{print $2}'";
 
         gpg = {
           key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
@@ -205,7 +205,7 @@ rec {
 
       qutebrowser rofi-pass ncmpcpp
       pavucontrol pass xdg-user-dirs
-      sxiv cmst libreoffice discord libnotify
+      sxiv cmst obs-studio discord libnotify
       ranger qbittorrent aspell darktable mpv
       blueman spotify nix-prefetch-github
       youtube-dl mako jq imgur-sh
@@ -327,7 +327,6 @@ rec {
       hooks = {
         preNew = ''
         for x in ''$(notmuch search --output=files tag:deleted) ; do mv ''$x ''${x}T ; done
-        mbsync --all -Xm -Xs
         '';
       };
       search.excludeTags = [ "deleted" "spam" "muted" ];
@@ -340,10 +339,10 @@ rec {
     astroid = {
       enable = true;
       externalEditor = "st -e nvim -c 'set ft=mail' '+set tw=72' %1";
-      # The notmuch hook already fetches from mbsync
       
       pollScript = ''
       export PASSWORD_STORE_DIR=/home/david/default/pass/
+      mbsync --all -Xm -Xs
       notmuch new'';
       extraConfig = {
         editor.attachment_directory = "~/dl";
@@ -505,12 +504,12 @@ rec {
       extraConfig = "pinentry-program /home/david/.nix-profile/bin/pinentry-qt";
     };
 
-    compton = {
-      enable = true;
-      backend = "glx";
-      vSync = "opengl-mswc";
-      extraOptions = builtins.readFile "${extra}/compton/.config/compton.conf";
-    };
+    # compton = {
+    #   enable = true;
+    #   backend = "glx";
+    #   vSync = "opengl-mswc";
+    #   extraOptions = builtins.readFile "${extra}/compton/.config/compton.conf";
+    # };
 
     syncthing.enable = true;
 
