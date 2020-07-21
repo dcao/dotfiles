@@ -13,6 +13,9 @@
 
   nixpkgs.overlays = [
     (import ./overlays/dcao.nix)
+    (import (builtins.fetchTarball {
+      url = https://github.com/nix-community/emacs-overlay/archive/db0186cde8b9756dcf9328cf2cc64574e506a5c7.tar.gz;
+    }))
   ];
 
   imports =
@@ -91,13 +94,12 @@
     wget curl zip unzip tree bc
     gcc pkg-config binutils ccache gnumake
     libinput-gestures ripgrep xorg.xmodmap
-    (polybar.override { mpdSupport = true; pulseSupport = true; })
 
     # fs
     ntfs3g exfat
 
     # editors
-    neovim emacs
+    neovim emacsGcc
 
     # misc
     gnupg bashmount light xdg_utils
@@ -120,12 +122,10 @@
   # List services that you want to enable:
   services.undervolt = {
     enable = true;
-    coreOffset = "-85";
+    coreOffset = -50;
   };
 
   services.blueman.enable = true;
-
-  services.emacs.enable = true;
 
   services.keybase.enable = true;
   services.kbfs.enable = true;

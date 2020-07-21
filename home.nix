@@ -10,14 +10,12 @@ let
   browser = "qutebrowser";
   colors = import ./cfg/colors;
   nvPlugins = pkgs.callPackage ./cfg/nvim/plugins.nix {};
-  dyalogOverlay = import ("${builtins.fetchTarball https://github.com/markus1189/dyalog-nixos/archive/master.tar.gz}/overlay.nix");
 in
 
 rec {
   nixpkgs = {
     config.allowUnfree = true;
     overlays = [
-      (dyalogOverlay)
       (import ./overlays/dcao.nix)
     ];
   };
@@ -214,17 +212,18 @@ rec {
       arduino keybase-gui exa firefox-esr-68 cabal2nix
       woeusb nix-prefetch-git jpegoptim woff2
       nix-index sbcl python3 mpc_cli geckodriver
-      tokei appimage-run androidenv.androidPkgs_9_0.platform-tools
+      tokei androidenv.androidPkgs_9_0.platform-tools
       sent screen-message pinentry-qt aerc w3m
       haskellPackages.hpack slack
       ledger hledger ledger-autosync python37Packages.ofxclient
       s3cmd maim feh xorg.xbacklight xorg.xfd gnome3.cheese
       xclip xorg.xev gnuapl j xorg.xwininfo bench
-      signal-desktop proselint hyperfine dyalog vale
+      signal-desktop hyperfine vale
       ride weechat bandwhich broot dos2unix
-      emscripten openssl nix-npm-install
+      openssl nix-npm-install
       graphviz kona rlwrap audacity zoom-us
-      chromium stack gdb flameshot
+      chromium stack gdb flameshot zotero
+      sqlite idris2
 
       dcao-sh
 
@@ -234,9 +233,7 @@ rec {
 
       (st.override {
         conf = (import ./cfg/st/config.nix) {};
-        patches = [
-          ./cfg/st/st-boxdraw_v2-0.8.2.diff
-        ];
+        patches = [];
       })
 
       # acme

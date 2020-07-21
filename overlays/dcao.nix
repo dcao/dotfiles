@@ -14,6 +14,7 @@ self: super:
   ride = super.callPackage ../pkgs/ride.nix {};
   selenium-legacy = super.callPackage ../pkgs/selenium-legacy.nix {};
   cvc4 = super.callPackage ../pkgs/cvc4 {};
+  idris2 = super.callPackage ../pkgs/idris2.nix {};
 
   nix-npm-install = super.writeScriptBin "nix-npm-install" ''
       #!/usr/bin/env bash

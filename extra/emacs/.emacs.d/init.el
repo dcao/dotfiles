@@ -6,6 +6,10 @@
 ;; --- PACKAGE INITIALIZATION
 (let ((gc-cons-threshold most-positive-fixnum))
 
+  ;; Set comp-deferred-compilation so that we can asynchronously compile faster
+  ;; versions of our libs when using gccemacs
+  (setq comp-deferred-compilation t)
+
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3") 
 
   ;; straight.el bootstrap

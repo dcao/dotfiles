@@ -70,7 +70,7 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 
 (cd "~/")                                         ; Move to the user directory
 (delete-selection-mode 1)                         ; Replace region when inserting text
-(display-time-mode 0)                             ; Enable time in the mode-line
+(display-time-mode 1)                             ; Enable time in the mode-line
 (fset 'yes-or-no-p 'y-or-n-p)                     ; Replace yes/no prompts with y/n
 (global-subword-mode 1)                           ; Iterate through CamelCase words
 (menu-bar-mode 0)                                 ; Disable the menu bar
@@ -115,6 +115,12 @@ To show marks in the left fringe of the editor.
   :config
   (global-evil-fringe-mark-mode))
 #+END_SRC 
+*** evil-surround
+#+begin_src emacs-lisp
+(use-package evil-surround
+  :config
+  (global-evil-surround-mode 1))
+#+end_src
 ** general.el
 *** Leader definitions
 #+BEGIN_SRC emacs-lisp
@@ -143,6 +149,8 @@ To show marks in the left fringe of the editor.
 
     (general-def "<escape>" 'keyboard-escape-quit)
     (general-def "C-w" 'evil-backward-delete)
+
+    (general-def "C-s" 'save-buffer)
 
     (general-def dcao/leader-key-alt (general-simulate-key dcao/leader-key))
 
@@ -312,6 +320,15 @@ one, an error is signaled."
 
 (provide 'buffer-move)
 ;;; buffer-move.el ends here
+#+end_src
+** gcmh
+The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
+
+#+begin_src emacs-lisp
+(use-package gcmh
+  :delight
+  :config
+  (gcmh-mode 1))
 #+end_src
 ** Meta
 *** Config reload
@@ -552,14 +569,10 @@ one, an error is signaled."
  dcao/default-font (font-spec :family "Iosevka" :size 16)
  dcao/variable-font (font-spec :family "Iosevka" :size 14))
 
-(use-package doom-themes)
-(use-package doom-gruvbox-theme
-  :load-path (lambda () (dcao/lisp-dir))
-  :straight nil
-  :after doom-themes
+(use-package doom-themes
   :config
-  (set-face-attribute 'default nil :font dcao/default-font)
-  (set-face-attribute 'variable-pitch nil :font dcao/variable-font))
+  (load-theme 'doom-gruvbox t)
+  (doom-themes-org-config))
 #+END_SRC
 ** Modeline
 #+BEGIN_SRC emacs-lisp
@@ -568,7 +581,8 @@ one, an error is signaled."
 
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
-  :hook (after-init . doom-modeline-mode)
+  :init
+  (doom-modeline-mode 1)
   :config
   (setq
    doom-modeline-minor-modes t
@@ -576,6 +590,9 @@ one, an error is signaled."
    doom-modeline-enable-word-count nil
    doom-modeline-indent-info t
    doom-modeline-checker-simple-format t))
+
+;; To fix the right side of the modeline getting cut off (see doom emacs readme)
+(setq all-the-icons-scale-factor 1)
 #+END_SRC
 ** Misc. settings
 #+BEGIN_SRC emacs-lisp
@@ -735,6 +752,11 @@ one, an error is signaled."
     "o s" (lambda () (interactive) (helm-rg "" nil (list dcao/org-root)))
     "p s r" (lambda () (interactive) (helm-rg "" nil (list (projectile-project-root))))))
 #+end_src
+** Company
+#+begin_src emacs-lisp
+(use-package company
+  :hook (org-roam-mode . company-mode))
+#+end_src
 ** Helpful
 #+BEGIN_SRC emacs-lisp
 (use-package helpful
@@ -808,7 +830,7 @@ Adding a keybind to show git info:
 ;   :hook ((haskell-mode-hook . dante-mode))
 ;   :config
 ;   (setq dante-debug '(inputs outputs responses command-line))
-;   (setq dante-methods '(new-impure-nix new-build bare-ghci)))
+;   (setq dante-methods '(stack new-impure-nix new-build bare-ghci)))
 
 ; (use-package lsp-haskell
 ;   :hook ((haskell-mode-hook . lsp-mode))
@@ -843,6 +865,11 @@ Adding a keybind to show git info:
          ("\\.ipkg$" . idris-ipkg-mode)
          ("\\.lidr$" . idris-mode)))
 #+END_SRC
+** Nix
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :mode "\\.nix\\'")
+#+end_src
 ** Lisp
 *** Rainbow Delimeters
 #+BEGIN_SRC emacs-lisp
@@ -946,6 +973,7 @@ Adding a keybind to show git info:
       org-expiry-inactive-timestamps t
       org-default-priority ?C
       org-lowest-priority ?D
+      org-startup-folded 'overview
       org-preview-latex-default-process 'imagemagick ; faster
       ;; refile
       org-refile-targets '((org-agenda-files :maxlevel . 5))
@@ -1560,7 +1588,6 @@ Return new copy of STRING."
   :delight
   :after org
   :hook (after-init . org-roam-mode)
-  :straight (:host github :repo "jethrokuan/org-roam" :branch "develop")
   :custom
   (org-roam-directory (concat dcao/org-root "brain"))
   :general
@@ -1575,9 +1602,14 @@ Return new copy of STRING."
        ""
        :file-name "${slug}"
        :head "#+title: ${title}
-#+roam_key: ${ref}
-#+latex_header: \\usepackage{prftree}\n"
+,#+roam_key: ${ref}
+,#+latex_header: \\usepackage{prftree}\n"
        :unnarrowed t))))
+
+(use-package company-org-roam
+  :straight (:host github :repo "org-roam/company-org-roam")
+  :config
+  (push 'company-org-roam company-backends))
 #+end_src
 ** HTML
 #+BEGIN_SRC emacs-lisp
