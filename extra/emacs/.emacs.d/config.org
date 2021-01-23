@@ -6,6 +6,7 @@ inspiration: https://github.com/angrybacon/dotemacs
 * Bootstrap
 ** Better defaults
 When we're running in GUI mode, we want to disable cursor blinking, the scroll bar, and the toolbar.
+
 #+BEGIN_SRC emacs-lisp
 (when window-system
   (blink-cursor-mode 0) ; Disable the cursor blinking
@@ -99,13 +100,21 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 #+BEGIN_SRC emacs-lisp
 (use-package evil
   :delight
-  (undo-tree-mode)
+  (global-undo-tree-mode)
   :init
+  (setq evil-want-keybindings nil)
+  (setq evil-undo-system 'undo-tree)
+  (global-undo-tree-mode)
   (setq
    evil-want-C-u-scroll t
    evil-want-C-i-jump nil)
   (evil-mode)
   (evil-normalize-keymaps))
+
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init '(magit notmuch calendar dired)))
 #+END_SRC
 *** Evil Fringe Mark
 To show marks in the left fringe of the editor.
@@ -115,6 +124,10 @@ To show marks in the left fringe of the editor.
   :config
   (global-evil-fringe-mark-mode))
 #+END_SRC 
+*** evil-numbers
+#+begin_src emacs-lisp
+(use-package evil-numbers)
+#+end_src
 *** evil-surround
 #+begin_src emacs-lisp
 (use-package evil-surround
@@ -133,6 +146,8 @@ To show marks in the left fringe of the editor.
 #+BEGIN_SRC emacs-lisp
   (use-package general
     :after evil
+    :init
+    (setq-default evil-undo-system 'undo-tree)
     :config
     (general-evil-setup t)
     (general-unbind 'normal dcao/leader-key)
@@ -148,7 +163,11 @@ To show marks in the left fringe of the editor.
     (general-def '(normal visual emacs) "SPC" (general-simulate-key "C-SPC"))
 
     (general-def "<escape>" 'keyboard-escape-quit)
-    (general-def "C-w" 'evil-backward-delete)
+    (general-def "C-w" 'backward-kill-word)
+
+    (general-def
+      :keymaps 'helm-map
+      "C-w" 'backward-kill-word)
 
     (general-def "C-s" 'save-buffer)
 
@@ -157,6 +176,7 @@ To show marks in the left fringe of the editor.
     (dcao-leader-def
       ;; unbind SPC and give it a title for which-key (see echo area)
       "" '(nil :which-key "universal leader")
+      "u" 'universal-argument
       ;; bind nothing but give SPC f a description for which-key
       "f" '(:ignore t :which-key "file")
       ;; use a cons as a replacement
@@ -370,28 +390,34 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 
 #+begin_src emacs-lisp
 (use-package exwm
+  :general
+  (:keymaps 'exwm-mode-map
+    "M-<tab>" 'helm-buffers-list
+    "M-l" (lambda () (interactive) (split-window nil nil 'right))
+    "M-h" (lambda () (interactive) (split-window nil nil 'left))
+    "M-j" 'split-window-below)
   :custom
-  (exwm-input-prefix-keys '(?\C-\s ?\M-x ?\C-\M-p ?\C-\M-f))
+  (exwm-input-prefix-keys '(?\C-\s ?\M-x ?\C-\M-p ?\C-\M-f ?\M-\t))
   :config
   (use-package exwm-config :straight nil)
-  (use-package exwm-randr :straight nil)
+  ; (use-package exwm-randr :straight nil)
 
-  (setq exwm-randr-workspace-output-plist
-        '(0 "eDP1"
-          1 "HDMI2"
-          2 "HDMI2"
-          3 "HDMI2"
-          4 "eDP1"
-          5 "eDP1"
-          6 "eDP1"
-          7 "eDP1"
-          8 "eDP1"
-          9 "eDP1"))
-  (add-hook 'exwm-randr-screen-change-hook
-            (lambda ()
-              (start-process-shell-command
-               "xrandr" nil "xrandr --output HDMI2 --right-of eDP1 --auto")))
-  (exwm-randr-enable)
+  ; (setq exwm-randr-workspace-output-plist
+  ;       '(0 "eDP1"
+  ;         1 "HDMI2"
+  ;         2 "HDMI2"
+  ;         3 "HDMI2"
+  ;         4 "eDP1"
+  ;         5 "eDP1"
+  ;         6 "eDP1"
+  ;         7 "eDP1"
+  ;         8 "eDP1"
+  ;         9 "eDP1"))
+  ; (add-hook 'exwm-randr-screen-change-hook
+  ;           (lambda ()
+  ;             (start-process-shell-command
+  ;              "xrandr" nil "xrandr --output HDMI2 --right-of eDP1 --auto")))
+  ; (exwm-randr-enable)
 
   (setq
    exwm-workspace-number 9
@@ -444,6 +470,7 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
                 (exwm-workspace-rename-buffer exwm-title))))
 
   (exwm-input-set-key (kbd "<s-tab>") #'helm-run-external-command)
+  (exwm-input-set-key (kbd "<M-tab>") #'helm-buffers-list)
   (exwm-input-set-key (kbd "s-h") #'evil-window-left)
   (exwm-input-set-key (kbd "s-j") #'evil-window-down)
   (exwm-input-set-key (kbd "s-k") #'evil-window-up)
@@ -460,6 +487,10 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
   (exwm-input-set-key (kbd "s-J") #'buf-move-down)
   (exwm-input-set-key (kbd "s-H") #'buf-move-left)
   (exwm-input-set-key (kbd "s-L") #'buf-move-right)
+  
+  (exwm-input-set-key (kbd "M-l") (lambda () (interactive) (split-window nil nil 'right)))
+  (exwm-input-set-key (kbd "M-h") (lambda () (interactive) (split-window nil nil 'left)))
+  (exwm-input-set-key (kbd "M-j") #'split-window-below)
 
   (dolist (k '(?\s-H
                ?\s-J
@@ -469,7 +500,12 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
     (pushnew k exwm-input-prefix-keys))
   
   (exwm-input-set-key (kbd "<s-return>")
-                      (lambda () (interactive) (start-process-shell-command "st" nil "st")))
+                      (lambda ()
+                        (interactive)
+                        (start-process-shell-command "st" nil
+                                                     (if (projectile-project-root)
+                                                         (concat "sh -c 'cd " (projectile-project-root) "; st'")
+                                                       "st"))))
 
   (exwm-input-set-key (kbd "C-M-p")
                       (lambda () (interactive) (start-process-shell-command "rofi-pass" nil "rofi-pass")))
@@ -556,7 +592,7 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
   (require 'exwm-systemtray)
   (exwm-systemtray-enable)
 
-  (exwm-enable))
+  (exwm-init))
 #+end_src
 * UI
 ** Theme
@@ -567,7 +603,12 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 
 (setq
  dcao/default-font (font-spec :family "Iosevka" :size 16)
- dcao/variable-font (font-spec :family "Iosevka" :size 14))
+ dcao/mono-font (font-spec :family "Iosevka" :size 16)
+ dcao/variable-font (font-spec :family "Alegreya" :size 18))
+
+(set-face-attribute 'default nil :font dcao/default-font)
+(set-face-attribute 'fixed-pitch nil :font dcao/mono-font)
+(set-face-attribute 'variable-pitch nil :font dcao/variable-font)
 
 (use-package doom-themes
   :config
@@ -580,6 +621,10 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
+;; Workaround for https://github.com/seagle0128/doom-modeline/issues/358
+(defun doom-modeline--active ()
+  t)
+
 (use-package doom-modeline
   :init
   (doom-modeline-mode 1)
@@ -675,13 +720,11 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 ; 	 (t
 ; 	  (buffer-name)))))
 #+END_SRC
-** Olivetti
-#+BEGIN_SRC emacs-lisp
-(use-package olivetti
-  :commands olivetti-mode
-  :config
-  (setq olivetti-body-width 80))
-#+END_SRC
+** SVG Tags
+#+begin_src emacs-lisp
+(use-package svg-tag-mode
+  :straight (:host github :repo "rougier/svg-tag-mode" :branch "main"))
+#+end_src
 ** TODO Eyebrowse
 ** TODO Persp?
 * Features
@@ -755,7 +798,7 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 ** Company
 #+begin_src emacs-lisp
 (use-package company
-  :hook (org-roam-mode . company-mode))
+  :hook (add-hook 'after-init-hook 'global-company-mode))
 #+end_src
 ** Helpful
 #+BEGIN_SRC emacs-lisp
@@ -779,9 +822,13 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
   (setq projectile-completion-system 'helm)
   :general
   (dcao-leader-def
-   "p" '(:keymap projectile-command-map :which-ley "projectile"))
+   "p" '(:keymap projectile-command-map :which-key "projectile"))
   :config
   (projectile-mode +1))
+
+(use-package helm-projectile
+  :config
+  (helm-projectile-on))
 #+END_SRC
 ** Magit
 #+BEGIN_SRC emacs-lisp
@@ -818,6 +865,17 @@ Adding a keybind to show git info:
 (use-package flycheck
   :init (global-flycheck-mode))
 #+END_SRC
+** Persistent scratch
+#+begin_src emacs-lisp
+(use-package persistent-scratch
+  :config
+  (persistent-scratch-setup-default))
+#+end_src
+** ediff
+#+begin_src emacs-lisp
+(use-package ediff
+  :config (set 'ediff-window-setup-function 'ediff-setup-windows-plain))
+#+end_src
 * Languages
 ** Haskell
 #+BEGIN_SRC emacs-lisp
@@ -876,7 +934,6 @@ Adding a keybind to show git info:
 (use-package rainbow-delimiters
   :init
   (progn
-    (add-hook 'org-mode-hook 'rainbow-delimiters-mode)
     (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
     (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)))
 #+END_SRC
@@ -908,7 +965,7 @@ Adding a keybind to show git info:
   :commands sly
   :general
   (dcao-local-leader-def
-   :keymap 'sly-mode-map
+   :keymaps 'sly-mode-map
    "s" 'sly
    "r r" 'sly-mrepl
    "r n" 'sly-mrepl-new
@@ -933,35 +990,13 @@ Adding a keybind to show git info:
 :CREATED: %U
 :END:
 %i")
-
-(defvar dcao/org-brain-template "* %^{title}
+(defvar dcao/org-journal-template "* %^{Title}
 :PROPERTIES:
 :CREATED: %U
 :END:
 %i")
 
-(defvar dcao/org-contact-template "* %^{Name}
-:PROPERTIES:
-:BIRTHDAY: %^{DOB (yyyy-mm-dd)}
-:END:
-%i")
-
-(defvar dcao/org-song-rec-template "** %^{Name}
-:PROPERTIES:
-:CREATED: %U
-:END:
-%i")
-
-(defvar dcao/org-weekly-review-template "** %(format-time-string \"%Y-%V\")
-:PROPERTIES:
-:CREATED: %U
-:END:
-- [ ] Sift inbox
-- [ ] Task checkup
-  - [ ] Emails?
-- [ ] =lt= checkup
-- [ ] Self-eval
-%?")
+(setq-default org-startup-folded 'content)
 
 (setq org-directory dcao/org-root
       org-agenda-files `(,dcao/org-root)
@@ -972,8 +1007,8 @@ Adding a keybind to show git info:
       org-log-into-drawer t
       org-expiry-inactive-timestamps t
       org-default-priority ?C
+      org-ellipsis "  "
       org-lowest-priority ?D
-      org-startup-folded 'overview
       org-preview-latex-default-process 'imagemagick ; faster
       ;; refile
       org-refile-targets '((org-agenda-files :maxlevel . 5))
@@ -986,14 +1021,8 @@ Adding a keybind to show git info:
       org-capture-templates
       `(("t" "inbox todo" entry (file ,(concat dcao/org-root "inbox.org"))
          ,dcao/org-inbox-template)
-        ("b" "brain entry" entry (file ,(concat dcao/org-root "brain/index.org"))
-         ,dcao/org-brain-template)
-        ("c" "contact" entry (file ,(concat dcao/org-root "inbox.org"))
-         ,dcao/org-contact-template)
-        ("s" "song rec" entry (file+headline ,(concat dcao/org-root "lt.org") "Song rec")
-         ,dcao/org-song-rec-template)
-        ("r" "weekly review" entry (file+headline ,(concat dcao/org-root "review.org") ,(format-time-string "%Y"))
-         ,dcao/org-weekly-review-template)))
+        ("j" "journal" entry (file ,(concat dcao/org-root "journal.org"))
+         ,dcao/org-journal-template)))
 #+END_SRC
 **** Agenda modifications
 I want to have a line above every day in the agenda. This does that:
@@ -1152,36 +1181,36 @@ If on a:
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-(require 'subr-x)
-(straight-use-package 'git)
-
-(defun org-git-version ()
-  "The Git version of org-mode.
-Inserted by installing org-mode or when a release is made."
-  (require 'git)
-  (let ((git-repo (expand-file-name
-                   "straight/repos/org/" user-emacs-directory)))
-    (string-trim
-     (git-run "describe"
-              "--match=release\*"
-              "--abbrev=6"
-              "HEAD"))))
-
-(defun org-release ()
-  "The release version of org-mode.
-Inserted by installing org-mode or when a release is made."
-  (require 'git)
-  (let ((git-repo (expand-file-name
-                   "straight/repos/org/" user-emacs-directory)))
-    (string-trim
-     (string-remove-prefix
-      "release_"
-      (git-run "describe"
-               "--match=release\*"
-               "--abbrev=0"
-               "HEAD")))))
-
-(provide 'org-version)
+; (require 'subr-x)
+; (straight-use-package 'git)
+; 
+; (defun org-git-version ()
+;   "The Git version of org-mode.
+; Inserted by installing org-mode or when a release is made."
+;   (require 'git)
+;   (let ((git-repo (expand-file-name
+;                    "straight/repos/org/" user-emacs-directory)))
+;     (string-trim
+;      (git-run "describe"
+;               "--match=release\*"
+;               "--abbrev=6"
+;               "HEAD"))))
+; 
+; (defun org-release ()
+;   "The release version of org-mode.
+; Inserted by installing org-mode or when a release is made."
+;   (require 'git)
+;   (let ((git-repo (expand-file-name
+;                    "straight/repos/org/" user-emacs-directory)))
+;     (string-trim
+;      (string-remove-prefix
+;       "release_"
+;       (git-run "describe"
+;                "--match=release\*"
+;                "--abbrev=0"
+;                "HEAD")))))
+; 
+; (provide 'org-version)
 
 (setq org-src-fontify-natively t
         org-edit-src-content-indentation 0
@@ -1199,8 +1228,9 @@ Inserted by installing org-mode or when a release is made."
    "a" 'org-agenda
    "o c" 'org-capture
    "o f" (lambda () (interactive) (helm-find-files-1 dcao/org-root))
-   "o j" 'org-journal-new-entry
    "f o" (lambda () (interactive) (helm-find-files-1 dcao/org-root)))
+  (:keymaps 'org-mode-map
+   "M-h" nil)
   (:states 'normal
    :keymaps 'org-mode-map
    [return] 'dcao/org/dwim-at-point
@@ -1224,11 +1254,16 @@ Inserted by installing org-mode or when a release is made."
    "p" 'org-set-property
    "c" '(:ignore t :which-key "clock")
    "c i" 'org-clock-in
-   "c o" 'org-clock-out)
+   "c o" 'org-clock-out
+   "c c" 'org-clock-remove-overlays
+   "c j" 'org-clock-goto
+   "c d" (lambda () (interactive) (org-clock-display '(16))))
 
   :config
-  (modify-syntax-entry ?< ".")
-  (modify-syntax-entry ?> ".")
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (modify-syntax-entry ?< ".")
+              (modify-syntax-entry ?> ".")))
   (advice-add #'org-return-indent :after #'dcao/fix-newline-and-indent-in-src-blocks)
   (advice-add 'org-refile :after
         (lambda (&rest _)
@@ -1249,45 +1284,6 @@ Inserted by installing org-mode or when a release is made."
 ;;   :config
 ;;   (setq helm-org-rifle-show-path t))
 #+END_SRC
-*** Journal
-#+BEGIN_SRC emacs-lisp
-(use-package org-journal
-  :after org
-  :defer t
-  
-  :custom
-  (org-journal-dir "~/default/org")
-  (org-journal-file-type 'yearly)
-  (org-journal-date-format "%a, %b %d, %Y")
-  (org-journal-file-format "journal-%Y"))
-#+END_SRC
-
-Orgzly doesn't have org-journal built-in, so I normally just add a note with the
-"journal" title in it instead - I want to automatically refile these notes to
-the correct place with a command.
-
-#+BEGIN_SRC emacs-lisp
-(defun dcao/org-refile-to-journal ()
-  "Refile a subtree to a datetree corresponding to its timestamp.
-
-The current time is used if the entry has no timestamp. If FILE
-is nil, refile in the current file."
-  (interactive)
-  (let* ((datetree-date (or (org-entry-get nil "CREATED" t)
-                            (org-read-date t nil "now")))
-         (date (org-time-string-to-time datetree-date)))
-    (save-excursion
-      (with-current-buffer (current-buffer)
-        (org-cut-subtree)
-        (org-journal-new-entry nil date)
-        (org-narrow-to-subtree)
-        (show-subtree)
-        (org-end-of-subtree t)
-        (newline)
-        (goto-char (point-max))
-        (org-paste-subtree 4)
-        (widen)))))
-  #+END_SRC
 *** Fixing stupid angle brackets in source blocks
 Angle brackets are highlighted as mismatched brackets, but it's just comparisons!!
 #+BEGIN_SRC emacs-lisp
@@ -1558,15 +1554,77 @@ Return new copy of STRING."
 #+begin_src emacs-lisp
 (use-package helm-org)
 (use-package org-ql
-  :general
-  (dcao-leader-def
-   "o r" 'helm-org-ql-agenda-files))
+  :commands org-ql--plain-query
+  :config
+  (use-package helm-org-ql
+    :general
+    (dcao-leader-def
+    "o r" 'helm-org-ql-agenda-files)))
+
+; https://emacs.stackexchange.com/questions/18179/org-agenda-command-with-org-agenda-filter-by-tag-not-working
+; https://stackoverflow.com/questions/10074016/org-mode-filter-on-tag-in-agenda-view/33444799#33444799
+(defun my/org-match-at-point-p (match)
+  "Return non-nil if headline at point matches MATCH.
+Here MATCH is a match string of the same format used by
+`org-tags-view'."
+  (funcall (cdr (org-make-tags-matcher match))
+           (org-get-todo-state)
+           (org-get-tags-at)
+           (org-reduced-level (org-current-level))))
+
+(defun my/org-agenda-skip-without-match (match)
+  "Skip current headline unless it matches MATCH.
+
+Return nil if headline containing point matches MATCH (which
+should be a match string of the same format used by
+`org-tags-view').  If headline does not match, return the
+position of the next headline in current buffer.
+
+Intended for use with `org-agenda-skip-function', where this will
+skip exactly those headlines that do not match." 
+  (save-excursion
+    (unless (org-at-heading-p) (org-back-to-heading)) 
+    (let ((next-headline (save-excursion
+                           (or (outline-next-heading) (point-max)))))
+      (if (my/org-match-at-point-p match) nil next-headline))))
+
+; https://stackoverflow.com/questions/10074016/org-mode-filter-on-tag-in-agenda-view
+(defun zin/org-agenda-skip-tag (tag &optional others)
+  "Skip all entries that correspond to TAG.
+
+If OTHERS is true, skip all entries that do not correspond to TAG."
+  (let ((next-headline (save-excursion (or (outline-next-heading) (point-max))))
+        (current-headline (or (and (org-at-heading-p)
+                                   (point))
+                              (save-excursion (org-back-to-heading)))))
+    (if others
+        (if (not (member tag (org-get-tags-at current-headline)))
+            next-headline
+          nil)
+      (if (member tag (org-get-tags-at current-headline))
+          next-headline
+        nil))))
 
 (setq org-agenda-custom-commands
       '(("a" "dcao view"
-         ((org-ql-block '(and (todo) (tags-local "focus"))
+         ((org-ql-block '(tags-local "goal")
+                        ((org-ql-block-header "goals")))
+          (org-ql-block '(tags-local "focus")
                         ((org-ql-block-header "focus")))
-          (agenda)))))
+          ; (org-ql-block '(and (todo) (scheduled :to 0) (tags-local "lec"))
+          ;               ((org-ql-block-header "overdue lectures")))
+          (agenda "" ((org-agenda-span 'week)
+                      (org-agenda-skip-function '(zin/org-agenda-skip-tag "lec"))))))
+        ("l" "lectures"
+         ((org-ql-block '(and (todo) (scheduled :to 0) (tags-local "lec"))
+                        ((org-ql-block-header "overdue lectures")))))
+        ("t" "dcao view other thing"
+         ((tags-todo "focus")
+          (agenda))
+         ((org-agenda-sorting-strategy '(priority-down))
+          (org-use-tag-inheritance nil)
+          (org-agenda-overriding-header "post-its:")))))
+          
 
 (defadvice org-agenda (around split-vertically activate)
   (let ((split-width-threshold 120))  ; or whatever width makes sense for you
@@ -1611,23 +1669,137 @@ Return new copy of STRING."
   :config
   (push 'company-org-roam company-backends))
 #+end_src
+*** org-krita
+#+begin_src emacs-lisp
+(use-package arc-mode)
+(use-package org-krita
+  :straight (:host github :repo "lepisma/org-krita" :branch "master" :files ("resources" "resources" "*.el" "*.el"))
+  :general
+  (dcao-local-leader-def
+    :keymaps 'org-mode-map
+    "k" 'org-krita-insert-new-image)
+  :config
+  (add-hook 'org-mode-hook 'org-krita-mode))
+#+end_src
+*** Focus
+**** org-superstar
+Used to hide bullets.
+
+#+begin_src emacs-lisp
+(use-package org-superstar
+  :after org
+  :config
+  (setq org-superstar-remove-leading-stars nil)
+  (setq org-superstar-headline-bullets-list '(" ")) ;; '("🞛" "◉" "○" "▷")
+  (setq org-superstar-item-bullet-alist
+        '((?+ . ?•)
+          (?* . ?➤)
+          (?- . ?–)))
+  (org-superstar-mode -1))
+#+end_src
+**** Modifying org faces for variable font mode
+Making sure that monospaced parts are monospaced:
+#+begin_src emacs-lisp
+(with-eval-after-load 'org-indent
+    (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+
+    (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-date nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-special-keyword nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-block-begin-line nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-block-end-line nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-document-info-keyword nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-meta-line nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-verbatim nil :inherit 'fixed-pitch))
+
+;; TODO: define minor mode that sets and unsets face attributes for org headers
+;; when minor mode enabled: inherit from variable pitch, line height, all that
+;; see https://github.com/lepisma/rogue/blob/75ab1c3422b409f41daa4c003b931e869eed0914/config.el#L205
+;; when disabled: inherit from outline-n
+
+(define-minor-mode dcao/fancy-org-headers-mode
+    "Customizes org level faces"
+    :init-value nil
+    :global nil
+    (if dcao/fancy-org-headers-mode
+          (when (eq major-mode 'org-mode)
+            (setq line-spacing (+ line-spacing 2))
+            (set-face-attribute 'org-level-1 nil :height 1.3)
+            (set-face-attribute 'org-level-2 nil :height 1.2 :slant 'italic)
+            (set-face-attribute 'org-level-3 nil :height 1.1)
+            (set-face-attribute 'org-level-4 nil :height 1.1)
+            (set-face-attribute 'org-level-5 nil :height 1.1)
+            (set-face-attribute 'org-level-6 nil :height 1.1)
+            (set-face-attribute 'org-level-7 nil :height 1.1)
+            (set-face-attribute 'org-level-8 nil :height 1.1))
+        (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.0)
+        (setq line-spacing (- line-spacing 2))
+        (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0 :slant 'normal)
+        (set-face-attribute 'org-level-3 nil :inherit 'outline-3 :height 1.0)
+        (set-face-attribute 'org-level-4 nil :inherit 'outline-4 :height 1.0)
+        (set-face-attribute 'org-level-5 nil :inherit 'outline-5 :height 1.0)
+        (set-face-attribute 'org-level-6 nil :inherit 'outline-6 :height 1.0)
+        (set-face-attribute 'org-level-7 nil :inherit 'outline-7 :height 1.0)
+        (set-face-attribute 'org-level-8 nil :inherit 'outline-8 :height 1.0)))
+#+end_src
+**** Olivetti
+#+begin_src emacs-lisp
+(use-package olivetti
+  :commands olivetti-mode
+  :config
+  (setq-default olivetti-body-width 80)
+  (setq-default olivetti-minimum-body-width 40))
+#+end_src
+**** focus mode
+#+begin_src emacs-lisp
+(define-minor-mode dcao/focus-mode
+    "Toggle buffer-local `olivetti-mode' with additional parameters."
+    :init-value nil
+    :global nil
+    (if dcao/focus-mode
+        (progn
+          (olivetti-mode 1)
+          (variable-pitch-mode 1)
+          (when (eq major-mode 'org-mode)
+            (org-superstar-mode 1)
+            (dcao/fancy-org-headers-mode 1)))
+      (olivetti-mode -1)
+      (variable-pitch-mode -1)
+      (when (eq major-mode 'org-mode)
+        (org-superstar-mode -1)
+        (dcao/fancy-org-headers-mode -1))))
+
+(dcao-local-leader-def
+  :keymaps 'org-mode-map
+   "f" 'dcao/focus-mode)
+#+end_src
 ** HTML
 #+BEGIN_SRC emacs-lisp
 (setq sgml-basic-offset 4)
 #+END_SRC
 ** LSP
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-mode
-  :hook (rust-mode . lsp)
-  :commands lsp
-  :config
-  (setq lsp-prefer-flymake nil)
-  (setq lsp-rust-server 'rust-analyzer)
-  (setq lsp-rust-analyzer-server-command '("rust-analyzer")))
+(setq lsp-keymap-prefix "C-SPC m")
 
-;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
-(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+; (use-package lsp-mode
+;   :init
+;   (add-hook 'rust-mode-hook #'lsp)
+;   :config
+;   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+;   (setq lsp-prefer-flymake nil)
+;   (setq lsp-rust-server 'rust-analyzer)
+;   (setq lsp-rust-analyzer-server-command '("rust-analyzer"))
+; 
+;   :general
+;   (dcao-local-leader-def
+;     :keymaps 'lsp-mode-map
+;     "" lsp-command-map))
+; 
+; ;; optionally
+; ; (use-package lsp-ui :commands lsp-ui-mode)
+; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 #+END_SRC
 ** Yaml
 #+BEGIN_SRC emacs-lisp

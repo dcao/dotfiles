@@ -14,19 +14,18 @@
   nixpkgs.overlays = [
     (import ./overlays/dcao.nix)
     (import (builtins.fetchTarball {
-      url = https://github.com/nix-community/emacs-overlay/archive/db0186cde8b9756dcf9328cf2cc64574e506a5c7.tar.gz;
+      url = https://github.com/nix-community/emacs-overlay/archive/1152483c83315d0e9189683fc7b9a45cd9c56cd9.tar.gz;
     }))
   ];
 
-  imports =
-    [ # Include the results of the hardware scan.
+  imports = [ # Include the results of the hardware scan.
     ./hw-boomerang.nix
     /etc/nixos/cachix.nix
-    ];
+  ];
 
   # Use the systemd-boot EFI boot loader.
   boot = {
-    kernelPackages = pkgs.linuxPackages_5_6;
+    kernelPackages = pkgs.linuxPackages;
     loader = {
       systemd-boot.enable = true;
       efi = {
@@ -77,9 +76,12 @@
 
   # Select internationalisation properties.
   i18n = {
-    consoleFont = "Lat2-Terminus16";
-    consoleKeyMap = "us";
     defaultLocale = "en_US.UTF-8";
+  };
+
+  console = {
+    font = "Lat2-Terminus16";
+    keyMap = "us";
   };
 
   # Set your time zone.
@@ -99,7 +101,7 @@
     ntfs3g exfat
 
     # editors
-    neovim emacsGcc
+    neovim emacs
 
     # misc
     gnupg bashmount light xdg_utils
@@ -180,11 +182,11 @@
 
     libinput = {
       enable = true;
-      dev = "/dev/input/event14";
-      accelProfile = "flat";
-      naturalScrolling = true;
+      # dev = "/dev/input/event14";
+      # accelProfile = "flat";
+      # naturalScrolling = true;
       disableWhileTyping = true;
-      tapping = false;
+      # tapping = false;
     };
   };
 
@@ -200,6 +202,7 @@
       emacs-all-the-icons-fonts
       ibm-plex
       fira
+      alegreya
     ];
     fontconfig = {
       defaultFonts = {

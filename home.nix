@@ -13,6 +13,14 @@ let
 in
 
 rec {
+  # imports = [
+  #   ./cfg/caches.nix
+  # ];
+
+  # caches.cachix = [
+  #   "nix-community"
+  # ];
+    
   nixpkgs = {
     config.allowUnfree = true;
     overlays = [
@@ -59,45 +67,47 @@ rec {
           sendMailCommand = "msmtp --read-envelope-from --read-recipients";
         };
         msmtp.enable = true;
+
+        neomutt.enable = true;
       };
 
-      cao-st = {
-        address = "david@cao.st";
-        userName = "david@cao.st";
-        realName = "David Cao";
-        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/Gandi Mail' | head -1";
+      # cao-st = {
+      #   address = "david@cao.st";
+      #   userName = "david@cao.st";
+      #   realName = "David Cao";
+      #   passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/Gandi Mail' | head -1";
 
-        gpg = {
-          key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
-        };
+      #   gpg = {
+      #     key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
+      #   };
 
-        imap = {
-          host = "mail.gandi.net";
-          port = 993;
-          tls = {
-            enable = true;
-          };
-        };
+      #   imap = {
+      #     host = "mail.gandi.net";
+      #     port = 993;
+      #     tls = {
+      #       enable = true;
+      #     };
+      #   };
 
-        smtp = {
-          host = "mail.gandi.net";
-          port = 465;
-          tls = {
-            enable = true;
-          };
-        };
+      #   smtp = {
+      #     host = "mail.gandi.net";
+      #     port = 465;
+      #     tls = {
+      #       enable = true;
+      #     };
+      #   };
 
-        notmuch.enable = true;
-        mbsync = {
-          enable = true;
-          patterns = [ "INBOX" ];
-        };
-        astroid = {
-          enable = true;
-          sendMailCommand = "msmtp --read-envelope-from --read-recipients";
-        };
-        msmtp.enable = true;
-      };
+      #   notmuch.enable = true;
+      #   mbsync = {
+      #     enable = true;
+      #     patterns = [ "INBOX" ];
+      #   };
+      #   astroid = {
+      #     enable = true;
+      #     sendMailCommand = "msmtp --read-envelope-from --read-recipients";
+      #   };
+      #   msmtp.enable = true;
+      # };
 
       # duhpster = {
       #   address = "duhpster@gmail.com";
@@ -128,7 +138,7 @@ rec {
         address = "dmcao@ucsd.edu";
         userName = "dmcao@ucsd.edu";
         realName = "David Cao";
-        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/TritonLink' | sed '4q;d' | awk '{print $2}'";
+        passwordCommand = "PASSWORD_STORE_DIR=$HOME/default/pass/ pass 'Root/TritonLink' | sed '4q;d' | cut -d' ' -f2";
 
         gpg = {
           key = "8FCD18FB168F99AFDEC4B054BAF82063B3C00397";
@@ -146,6 +156,8 @@ rec {
           sendMailCommand = "msmtp --read-envelope-from --read-recipients";
         };
         msmtp.enable = true;
+
+        neomutt.enable = true;
       };
     };
   };
@@ -207,9 +219,9 @@ rec {
       ranger qbittorrent aspell darktable mpv
       blueman spotify nix-prefetch-github
       youtube-dl mako jq imgur-sh
-      wl-clipboard fzf hugo pandoc ffmpeg
-      ipe anki scribus neofetch imagemagick
-      arduino keybase-gui exa firefox-esr-68 cabal2nix
+      wl-clipboard fzf hugo ffmpeg
+      ipe scribus neofetch imagemagick
+      arduino keybase-gui exa firefox cabal2nix
       woeusb nix-prefetch-git jpegoptim woff2
       nix-index sbcl python3 mpc_cli geckodriver
       tokei androidenv.androidPkgs_9_0.platform-tools
@@ -217,13 +229,16 @@ rec {
       haskellPackages.hpack slack
       ledger hledger ledger-autosync python37Packages.ofxclient
       s3cmd maim feh xorg.xbacklight xorg.xfd gnome3.cheese
-      xclip xorg.xev gnuapl j xorg.xwininfo bench
+      xclip xorg.xev gnuapl xorg.xwininfo bench
       signal-desktop hyperfine vale
       ride weechat bandwhich broot dos2unix
       openssl nix-npm-install
-      graphviz kona rlwrap audacity zoom-us
-      chromium stack gdb flameshot zotero
-      sqlite idris2
+      graphviz kona rlwrap zoom-us
+      stack gdb flameshot zotero
+      sqlite heroku racket krita
+      z3 zenith rustc qrencode paperkey
+      sparkleshare jdk11 macchanger zotero
+      mailspring thunderbird nnn
 
       dcao-sh
 
@@ -322,7 +337,7 @@ rec {
     notmuch = {
       enable = true;
       hooks = {
-        preNew = ''
+        postNew = ''
         for x in ''$(notmuch search --output=files tag:deleted) ; do mv ''$x ''${x}T ; done
         '';
       };
@@ -350,6 +365,10 @@ rec {
       enable = true;
     };
 
+    neomutt = {
+      enable = true;
+    };
+
     direnv = {
       enable = true;
       enableFishIntegration = true;
@@ -360,7 +379,7 @@ rec {
     };
 
     beets = {
-      enable = true;
+      enable = false;
       settings = {
         directory = "~/default/mus";
         library = "~/beets.db";
@@ -509,6 +528,7 @@ rec {
     # };
 
     syncthing.enable = true;
+    dropbox.enable = true;
 
     mpd = {
       enable = true;

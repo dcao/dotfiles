@@ -8,7 +8,7 @@
 
   ;; Set comp-deferred-compilation so that we can asynchronously compile faster
   ;; versions of our libs when using gccemacs
-  (setq comp-deferred-compilation t)
+  ;; (setq comp-deferred-compilation t)
 
   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3") 
 
@@ -29,6 +29,7 @@
   ;; Install dependencies
   (straight-use-package 'delight)
   (straight-use-package 'use-package)
+  (straight-use-package '(org-plus-contrib :includes (org) :local-repo "org"))
   (setq-default
    use-package-always-ensure nil
    straight-use-package-by-default t)
@@ -37,7 +38,7 @@
   (if (file-exists-p (expand-file-name "config.elc" user-emacs-directory))
       (load-file (expand-file-name "config.elc" user-emacs-directory))
     ;; Otherwise use org-babel to tangle and load the configuration
-    (use-package org :ensure org-plus-contrib)
+    (use-package org)
     (org-babel-tangle-file (expand-file-name "config.org" user-emacs-directory) (expand-file-name "config.el" user-emacs-directory) "emacs-lisp")
     (load-file (expand-file-name "config.el" user-emacs-directory)))
   (garbage-collect))
