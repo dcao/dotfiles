@@ -8,6 +8,39 @@
     [ <nixpkgs/nixos/modules/installer/scan/not-detected.nix>
     ];
 
+  # Trackpoint
+  hardware = {
+    cpu.intel.updateMicrocode = true;
+    acpilight.enable = true;
+    bluetooth = {
+      enable = true;
+      config = {
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+        };
+      };
+    };
+
+    trackpoint = {
+      enable = true;
+      emulateWheel = true;
+      speed = 160;
+    };
+
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+      extraPackages = with pkgs; [ beignet vaapiIntel libvdpau-va-gl vaapiVdpau ];
+    };
+  };
+
+  # List services that you want to enable:
+  services.undervolt = {
+    enable = true;
+    coreOffset = -50;
+  };
+
   boot.initrd.availableKernelModules = [ "xhci_pci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];

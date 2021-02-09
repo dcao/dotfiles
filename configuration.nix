@@ -35,33 +35,6 @@
     tmpOnTmpfs = true;
   };
 
-  # Trackpoint
-  hardware = {
-    cpu.intel.updateMicrocode = true;
-    acpilight.enable = true;
-    bluetooth = {
-      enable = true;
-      config = {
-        General = {
-          Enable = "Source,Sink,Media,Socket";
-        };
-      };
-    };
-
-    trackpoint = {
-      enable = true;
-      emulateWheel = true;
-      speed = 160;
-    };
-
-    opengl = {
-      enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
-      extraPackages = with pkgs; [ beignet vaapiIntel libvdpau-va-gl vaapiVdpau ];
-    };
-  };
-
   # Networking
   networking = {
     hostName = "boomerang";
@@ -120,12 +93,6 @@
   # started in user sessions.
   # programs.mtr.enable = true;
   # programs.gnupg.agent = { enable = true; enableSSHSupport = true; };
-
-  # List services that you want to enable:
-  services.undervolt = {
-    enable = true;
-    coreOffset = -50;
-  };
 
   services.blueman.enable = true;
 
