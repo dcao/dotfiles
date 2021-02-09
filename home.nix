@@ -210,50 +210,79 @@ rec {
       );
     };
 
-    packages = with pkgs; [
-      fd bat
+    packages = with pkgs;
+      let
+        custom-r = (rWrapper.override {
+          packages = with rPackages;
+            let
+              r-ledger = buildRPackage {
+                name = "r-ledger";
+                src = pkgs.fetchFromGitHub {
+                  owner = "trevorld";
+                  repo = "r-ledger";
+                  rev = "5066f9968481f91005fcecdbd80e74dc0d7fe9cf";
+                  sha256 = "198ylg4hwnwc4w9pn3wsiigq25v80rpn61k8449a4f35vrfrcpga";
+                };
+                
+                propagatedBuildInputs = [ rlang dplyr rio rlang stringr tidyr tibble tidyselect ];
+                nativeBuildInputs = [ rlang dplyr rio rlang stringr tidyr tibble tidyselect ];
+              };
+            in [ ggplot2 dplyr r-ledger tibble tidyr zoo littler ]; });
+      in [
+        fd bat
 
-      qutebrowser rofi-pass ncmpcpp
-      pavucontrol pass xdg-user-dirs
-      sxiv cmst obs-studio discord libnotify
-      ranger qbittorrent aspell darktable mpv
-      blueman spotify nix-prefetch-github
-      youtube-dl mako jq imgur-sh
-      wl-clipboard fzf hugo ffmpeg
-      ipe scribus neofetch imagemagick
-      arduino keybase-gui exa firefox cabal2nix
-      woeusb nix-prefetch-git jpegoptim woff2
-      nix-index sbcl python3 mpc_cli geckodriver
-      tokei androidenv.androidPkgs_9_0.platform-tools
-      sent screen-message pinentry-qt aerc w3m
-      haskellPackages.hpack slack
-      ledger hledger ledger-autosync python37Packages.ofxclient
-      s3cmd maim feh xorg.xbacklight xorg.xfd gnome3.cheese
-      xclip xorg.xev gnuapl xorg.xwininfo bench
-      signal-desktop hyperfine vale
-      ride weechat bandwhich broot dos2unix
-      openssl nix-npm-install
-      graphviz kona rlwrap zoom-us
-      stack gdb flameshot zotero
-      sqlite heroku racket krita
-      z3 zenith rustc qrencode paperkey
-      sparkleshare jdk11 macchanger zotero
-      mailspring thunderbird nnn
+        qutebrowser rofi-pass ncmpcpp
+        pavucontrol pass xdg-user-dirs
+        sxiv cmst obs-studio discord libnotify
+        ranger qbittorrent aspell darktable mpv
+        blueman spotify nix-prefetch-github
+        youtube-dl mako jq imgur-sh
+        wl-clipboard fzf hugo ffmpeg
+        ipe scribus neofetch imagemagick
+        arduino keybase-gui exa firefox cabal2nix
+        woeusb nix-prefetch-git jpegoptim woff2
+        nix-index sbcl mpc_cli geckodriver
+        tokei androidenv.androidPkgs_9_0.platform-tools
+        sent screen-message pinentry-qt aerc w3m
+        haskellPackages.hpack slack
+        bean-add
+        ledger hledger ledger-autosync python37Packages.ofxclient
+        s3cmd maim feh xorg.xbacklight xorg.xfd gnome3.cheese
+        xclip xorg.xev gnuapl xorg.xwininfo bench
+        signal-desktop hyperfine vale
+        ride weechat bandwhich broot dos2unix
+        openssl nix-npm-install
+        graphviz kona rlwrap zoom-us
+        stack gdb flameshot zotero
+        sqlite heroku racket krita
+        z3 zenith rustc qrencode paperkey
+        sparkleshare jdk11 macchanger zotero
+        mailspring thunderbird nnn
 
-      dcao-sh
+        julia
 
-      texlive.combined.scheme-full
+        (python38.withPackages (ps: with ps; [ beancount ]))
 
-      cmake llvmPackages_9.clang-unwrapped llvmPackages_9.llvm libxml2 zlib
+        custom-r
 
-      (st.override {
-        conf = (import ./cfg/st/config.nix) {};
-        patches = [];
-      })
+        (rPackages.littler.overrideDerivation (attrs: {
+          preConfigure = "export PATH=${custom-r}/bin/:\$PATH";
+        }))
 
-      # acme
-      fortune cowsay lolcat cmatrix libcaca
-    ];
+        dcao-sh
+
+        texlive.combined.scheme-full
+
+        cmake llvmPackages_9.clang-unwrapped llvmPackages_9.llvm libxml2 zlib
+
+        (st.override {
+          conf = (import ./cfg/st/config.nix) {};
+          patches = [];
+        })
+
+        # acme
+        fortune cowsay lolcat cmatrix libcaca
+      ];
 
     file = {
       ".ncmpcpp/config".source = "${extra}/ncmpcpp/config";
@@ -279,7 +308,7 @@ rec {
       TERM = "xterm-256color";
       PASSWORD_STORE_DIR = "$HOME/default/pass/";
       FZF_DEFAULT_OPTS = "--height 50% --reverse --ansi";
-      LEDGER_FILE = "$HOME/default/ledger/main.ldg";
+      LEDGER_FILE = "$HOME/default/ledger/spending.ldg";
     };
   };
 
@@ -308,13 +337,13 @@ rec {
         ew = "emacs -nw";
         pa = "pikaur";
         rl = "source ~/.config/fish/config.fish";
-        r = "~/.files/.rice/r";
         musdl = "youtube-dl -i --extract-audio --audio-format mp3 --audio-quality 0";
         startx = "startx ~/.xinitrc";
         ea = "exa -la";
         n = "nvim ~/default/vimwiki/index.md -c 'NV'";
         w = "nvim ~/default/vimwiki/index.md -c 'NV'";
         h = "hledger";
+        leg = "ledger";
         lsync = "ledger-autosync -l /home/david/default/ledger/combined.ldg --payee-format '{payee}' >> /home/david/default/ledger/review.ldg";
       };
     };
@@ -546,7 +575,7 @@ rec {
         };
 
         global = {
-          monitor = 0;
+          # monitor = 0;
           follow = "mouse";
           geometry = "300x5-4-40";
           indicate_hidden = true;

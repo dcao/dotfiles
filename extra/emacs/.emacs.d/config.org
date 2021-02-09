@@ -114,7 +114,7 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 (use-package evil-collection
   :after evil
   :config
-  (evil-collection-init '(magit notmuch calendar dired)))
+  (evil-collection-init '(magit notmuch calendar dired pdf)))
 #+END_SRC
 *** Evil Fringe Mark
 To show marks in the left fringe of the editor.
@@ -392,7 +392,7 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 (use-package exwm
   :general
   (:keymaps 'exwm-mode-map
-    "M-<tab>" 'helm-buffers-list
+    "M-<tab>" 'consult-buffer
     "M-l" (lambda () (interactive) (split-window nil nil 'right))
     "M-h" (lambda () (interactive) (split-window nil nil 'left))
     "M-j" 'split-window-below)
@@ -470,7 +470,7 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
                 (exwm-workspace-rename-buffer exwm-title))))
 
   (exwm-input-set-key (kbd "<s-tab>") #'helm-run-external-command)
-  (exwm-input-set-key (kbd "<M-tab>") #'helm-buffers-list)
+  (exwm-input-set-key (kbd "<M-tab>") #'consult-buffer)
   (exwm-input-set-key (kbd "s-h") #'evil-window-left)
   (exwm-input-set-key (kbd "s-j") #'evil-window-down)
   (exwm-input-set-key (kbd "s-k") #'evil-window-up)
@@ -630,11 +630,29 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
   (doom-modeline-mode 1)
   :config
   (setq
-   doom-modeline-minor-modes t
+   doom-modeline-minor-modes nil
    doom-modeline-major-mode-icon nil
    doom-modeline-enable-word-count nil
-   doom-modeline-indent-info t
-   doom-modeline-checker-simple-format t))
+   doom-modeline-indent-info nil
+   doom-modeline-buffer-encoding nil
+   doom-modeline-checker-simple-format t)
+
+  (doom-modeline-def-segment space+
+    (doom-modeline-spc))
+
+  ; Fix time display
+  (doom-modeline-def-segment misc-info
+  "Mode line construct for miscellaneous information.
+By default, this shows the information specified by `global-mode-string'."
+      '("" mode-line-misc-info))
+  
+  (doom-modeline-def-modeline 'dcao-main
+    '(bar workspace-name window-number modals matches buffer-info remote-host buffer-position word-count parrot selection-info)
+    '(objed-state persp-name grip irc mu4e gnus github debug repl lsp minor-modes indent-info buffer-encoding process checker vcs major-mode input-method space+ misc-info battery))
+  
+  (defun setup-custom-doom-modeline ()
+    (doom-modeline-set-modeline 'dcao-main))
+  (add-hook 'doom-modeline-mode-hook 'setup-custom-doom-modeline))
 
 ;; To fix the right side of the modeline getting cut off (see doom emacs readme)
 (setq all-the-icons-scale-factor 1)
@@ -762,18 +780,6 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
         helm-find-files-doc-header nil)
   :general
   (general-define-key
-    "M-x" 'helm-M-x
-    "C-x C-f" 'helm-find-files
-    "C-x f" 'helm-recentf
-    "C-SPC" 'helm-dabbrev
-    "M-y" 'helm-show-kill-ring
-    "C-x b" 'helm-buffers-list)
-  (dcao-leader-def
-    ":" 'helm-M-x
-    "f f" 'helm-find-files
-    "f r" 'helm-recentf
-    "b b" 'helm-buffers-list)
-  (general-define-key
     :keymaps 'helm-map
     "TAB" 'helm-execute-persistent-action
     "C-j" 'helm-select-action)
@@ -781,7 +787,6 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
   (add-hook 'helm-after-initialize-hook #'+helm|hide-mode-line)
   (advice-add #'helm-display-mode-line :override #'+helm|hide-mode-line)
   (advice-add #'helm-ag-show-status-default-mode-line :override #'ignore) 
-  (helm-mode 1)
   (helm-autoresize-mode 1)
   ; get helm to play nice with shackling
   (setq helm-display-function 'pop-to-buffer)
@@ -789,16 +794,75 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 #+END_SRC
 *** helm-rg
 #+begin_src emacs-lisp
-(use-package helm-rg
+; (use-package helm-rg
+;   :general
+;   (dcao-leader-def
+;     "o s" (lambda () (interactive) (helm-rg "" nil (list dcao/org-root)))
+;     "p s r" (lambda () (interactive) (helm-rg "" nil (list (projectile-project-root))))))
+#+end_src
+** Completion
+#+begin_src emacs-lisp
+(use-package selectrum
+  :init
+  (selectrum-mode +1))
+
+(use-package marginalia
   :general
+  (general-define-key
+    :keymaps 'minibuffer-local-map
+    "M-a" 'marginalia-cycle)
+  
+  :init
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode)
+
+  ;; When using Selectrum, ensure that Selectrum is refreshed when cycling annotations.
+  (advice-add #'marginalia-cycle :after
+              (lambda () (when (bound-and-true-p selectrum-mode) (selectrum-exhibit)))))
+
+(use-package prescient)
+(use-package selectrum-prescient
+  :init
+  (selectrum-prescient-mode))
+
+(use-package embark
+  :ensure t
+  :bind
+  ("C-S-a" . embark-act))
+
+(use-package consult
+  :straight (:host github
+             :repo "minad/consult"
+             :files ("resources" "resources" "*.el" "*.el"))
+  :general
+  (general-define-key
+    "M-x" 'execute-extended-command
+    "C-x f" 'consult-recent-file
+    "C-x b" 'consult-buffer)
   (dcao-leader-def
-    "o s" (lambda () (interactive) (helm-rg "" nil (list dcao/org-root)))
-    "p s r" (lambda () (interactive) (helm-rg "" nil (list (projectile-project-root))))))
+    ":" 'execute-extended-command
+    "f f" 'find-file
+    "f r" 'consult-recent-file
+    "b b" 'consult-buffer
+    "o s" (lambda () (interactive) (consult-ripgrep dcao/org-root))
+    "p s r" (lambda () (interactive) (consult-ripgrep (projectile-project-root)))))
+
+;; Consult users will also want the embark-consult package.
+(use-package embark-consult
+  :ensure t
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  ;; if you want to have consult previews as you move around an
+  ;; auto-updating embark collect buffer
+  :hook
+  (embark-collect-mode . embark-consult-preview-minor-mode))
+
 #+end_src
 ** Company
 #+begin_src emacs-lisp
 (use-package company
-  :hook (add-hook 'after-init-hook 'global-company-mode))
+  :hook (after-init . global-company-mode))
 #+end_src
 ** Helpful
 #+BEGIN_SRC emacs-lisp
@@ -819,16 +883,16 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 (use-package projectile
   :delight
   :init
-  (setq projectile-completion-system 'helm)
+  (setq projectile-completion-system 'auto)
   :general
   (dcao-leader-def
    "p" '(:keymap projectile-command-map :which-key "projectile"))
   :config
   (projectile-mode +1))
 
-(use-package helm-projectile
-  :config
-  (helm-projectile-on))
+; (use-package helm-projectile
+;   :config
+;   (helm-projectile-on))
 #+END_SRC
 ** Magit
 #+BEGIN_SRC emacs-lisp
@@ -1169,7 +1233,9 @@ If on a:
 #+BEGIN_SRC emacs-lisp
 (use-package evil-org
   :delight evil-org-mode
-  :hook (org-mode . evil-org-mode)
+  :hook
+  (org-mode . evil-org-mode)
+  (org-mode . olivetti-mode)
   :init
   (defvar evil-org-key-theme '(navigation insert textobjects))
   (defvar evil-org-special-o/O '(table-row))
@@ -1221,14 +1287,19 @@ If on a:
         org-agenda-restore-windows-after-quit t
         org-src-tab-acts-natively t)
 
+(defun dcao/find-in-dir (dir)
+  `(lambda () (interactive)
+    (let ((default-directory ,dir))
+      (call-interactively 'find-file))))
+
 (use-package org-plus-contrib
   :general
   (dcao-leader-def
    "o" '(:ignore t :which-key "org")
    "a" 'org-agenda
    "o c" 'org-capture
-   "o f" (lambda () (interactive) (helm-find-files-1 dcao/org-root))
-   "f o" (lambda () (interactive) (helm-find-files-1 dcao/org-root)))
+   "o f" (dcao/find-in-dir dcao/org-root)
+   "f o" (dcao/find-in-dir dcao/org-root))
   (:keymaps 'org-mode-map
    "M-h" nil)
   (:states 'normal
@@ -1283,6 +1354,106 @@ If on a:
 ;;    "o r" 'helm-org-rifle-agenda-files)
 ;;   :config
 ;;   (setq helm-org-rifle-show-path t))
+
+
+(use-package a)
+
+(require 'org-ql-view)
+
+(defun baal-org-ql--format-element (line)
+  "Format org heading LINE derived from org-ql-views.
+Adding file name and outline path for more robust filtering in minibuffer."
+  (let* ((marker (get-text-property 0 'org-hd-marker line))
+         (level (get-text-property 0 'level line))
+         (file (propertize (org-with-point-at marker
+                             (or (file-name-nondirectory (buffer-file-name (buffer-base-buffer))))) 'face 'success))
+         (path (when (> level 1)
+                 (propertize (org-with-point-at marker
+                               (mapconcat #'substring-no-properties (org-get-outline-path nil t) "/")) 'face 'completions-annotations)))
+         (new (concat file ":" (make-string (- 15 (length file)) ? )
+                      line (when path " | ") path))
+         (props (text-properties-at 0 line)))
+    (org-add-props new props)))
+(defun baal-org-ql--current-headline ()
+  "Format the current entry headline.
+Used as the default candidate when searching `current-buffer'."
+  (save-excursion
+    (when (derived-mode-p 'org-mode)
+      (unless (or (org-before-first-heading-p)
+                  (org-in-archived-heading-p))
+        (org-back-to-heading)
+        (baal-org-ql--format-element
+         (org-ql-view--format-element
+          (org-ql--add-markers
+           (org-element-headline-parser (line-end-position)))))))))
+(defun baal-org-ql--candidates (&optional arg archive)
+  "Collect headlines in all selected org files.
+ARG controls whether to search current buffer, open org buffers, and
+org-agenda-files.  Search headlines in ARCHIVE when non-nil."
+  (let* ((buf-name (buffer-file-name))
+         (base (buffer-base-buffer))
+         (-compare-fn #'file-equal-p)
+         (b (pcase arg
+              ('3 (org-files-list))
+              ('(4) (-uniq
+                     (append (org-agenda-files)
+                             (when (derived-mode-p 'org-mode)
+                               (list (or buf-name
+                                         (buffer-file-name base)))))))
+              (_ (or buf-name
+                     base))))
+         (cands (->> (org-ql-select b
+                       (if archive
+                           '(tags "ARCHIVE")
+                         ;; entries & files tagged with noql are not searched. TODO
+                         ;; look into restricting search for only headlines with
+                         ;; custom ids. (may be faster but obviously not as inclusive).
+                         '(not (tags "noql" "ARCHIVE")))
+                       :action 'element-with-markers
+                       ;; When searching current-buffer sort headlines by default
+                       ;; buffer-order. Otherwise, sort by random order.
+                       :sort (when arg '(random)))
+                     (--map (baal-org-ql--format-element
+                             (org-ql-view--format-element it))))))
+    (cl-loop for cand being the elements of cands
+             for id = (get-text-property 0 'ID cand)
+             for mark = (get-text-property 0 'org-hd-marker cand)
+             for title = (get-text-property 0 'raw-value cand)
+             collect (cons cand (a-list :id id :mark mark :title title)))))
+(defvar baal-org-ql-goto-heading-history nil)
+
+(defun baal-org-ql-goto-heading (&optional arg archive)
+  "Go to the location of a custom ID, selected interactively.
+ARG and ARCHIVE passed to `baal-org-ql--candidates'."
+  (interactive "P")
+  (let* ((prescient-sort-length-enable nil)
+         (buff (current-buffer))
+         (prompt (if archive "[GOTO] Archive: " "[GOTO] Headline: "))
+         (default (baal-org-ql--current-headline))
+         (cands (baal-org-ql--candidates arg archive))
+         (entry
+          ;; standard completing-read configuration
+          ;;
+          ;; (completing-read prompt cands
+          ;;                  nil nil nil baal-org-ql-goto-heading-history
+          ;;                  (unless arg default))
+          (selectrum-read prompt nil
+                          :minibuffer-completion-table cands
+                          :history baal-org-ql-goto-heading-history
+                          :default-candidate (unless arg default)
+                          :no-move-default-candidate t))
+         (marker (a-get (cdr (assoc-string entry cands)) :mark)))
+    (if marker
+        (progn
+          (org-goto-marker-or-bmk marker)
+          (baal-org-post-follow-hooks buff))
+      (org-capture nil "i")
+      (insert entry))))
+
+(baal-org-ql-goto-heading '(4))
+
+(dcao-leader-def
+ "o r" '(lambda () (interactive) (baal-org-ql-goto-heading '(4))))
 #+END_SRC
 *** Fixing stupid angle brackets in source blocks
 Angle brackets are highlighted as mismatched brackets, but it's just comparisons!!
@@ -1820,6 +1991,24 @@ Making sure that monospaced parts are monospaced:
 (use-package zig-mode
   :mode (("\\.zig\\'" . zig-mode)))
 #+END_SRC
+** Ledger
+*** Beancount
+#+begin_src emacs-lisp
+(use-package beancount
+  :straight (:host github :repo "beancount/beancount-mode" :branch "main")
+  :mode ("\\.beancount\\'" . beancount-mode))
+#+end_src
+*** Ledger
+#+begin_src emacs-lisp
+(use-package ledger-mode
+  :mode ("\\.ldg\\'" . ledger-mode)
+  :config
+  (setq ledger-default-date-format ledger-iso-date-format))
+
+(dcao-leader-def
+  "l" '(nil :which-key "ledger")
+  "l l" (lambda () (interactive) (find-file "~/default/ledger/spending.ldg")))
+#+end_src
 * Apps
 ** calfw
 #+BEGIN_SRC emacs-lisp
@@ -1850,4 +2039,90 @@ Making sure that monospaced parts are monospaced:
     (elfeed-org)
     (setq rmh-elfeed-org-files (list (concat dcao/org-root "elfeed.org"))))
 #+END_SRC
+** Notetaking - pdf-tools + org-noter + helm-bibtex
+#+begin_src emacs-lisp
+(defun evil-collection-pdf-view-goto-page (&optional page)
+  "`evil' wrapper around `pdf-view-last-page'."
+  (interactive "P")
+  (if page
+      (pdf-view-goto-page page)
+    (let ((hscroll (window-hscroll)))
+      (pdf-view-last-page)
+      (image-eob)
+      (image-set-window-hscroll hscroll))))
 
+(defun evil-collection-pdf-view-goto-first-page (&optional page)
+  "`evil' wrapper around `pdf-view-first-page'."
+  (interactive "P")
+  (if page
+      (pdf-view-goto-page page)
+    (let ((hscroll (window-hscroll)))
+      (pdf-view-first-page)
+      (image-bob)
+      (image-set-window-hscroll hscroll))))
+
+(use-package pdf-tools
+  :general
+  (:keymaps 'pdf-view-mode-map
+   "j" 'pdf-view-next-line-or-next-page
+   "k" 'pdf-view-previous-line-or-previous-page
+   "C-u" 'pdf-view-previous-page-command
+   "C-d" 'pdf-view-next-page-command
+
+   "g" nil
+   "g g" 'evil-collection-pdf-view-goto-first-page
+   "G" 'evil-collection-pdf-view-goto-page
+   
+   "f" 'pdf-links-isearch-link
+   "F" 'pdf-links-action-perform
+   "h" 'image-backward-hscroll
+   "^" 'image-bol
+   "$" 'image-eol
+   "l" 'image-forward-hscroll
+   
+   "/" 'isearch-forward
+   "?" 'isearch-backward
+   "n" 'isearch-repeat-forward
+   "N" 'isearch-repeat-backward
+
+   "zd" 'pdf-view-dark-minor-mode
+   "zm" 'pdf-view-midnight-minor-mode
+   "zp" 'pdf-view-printer-minor-mode
+
+   "i" 'org-noter-insert-note
+   
+   ; refresh
+   "g r" 'revert-buffer)
+  :config
+  ;; initialise
+  (pdf-tools-install)
+  ;; open pdfs scaled to fit page
+  (setq-default pdf-view-display-size 'fit-page)
+  ;; automatically annotate highlights
+  (setq pdf-annot-activate-created-annotations t)
+  ;; more fine-grained zooming
+  (setq pdf-view-resize-factor 1.1))
+
+(use-package org-noter
+  :general
+  (:keymaps '(override org-noter-docs-mode-map org-noter-notes-mode-map)
+   "C-k" 'org-noter-sync-prev-page-or-chapter
+   "C-j" 'org-noter-sync-next-page-or-chapter)
+  (dcao-leader-def
+    "o n" 'org-noter)
+  :custom
+  (org-noter-always-create-frame nil)
+  (org-noter-default-notes-file-names '("papers.org"))
+  (org-noter-notes-search-path (list dcao/org-root)))
+#+end_src
+*** helm-bibtex
+#+begin_src emacs-lisp
+(use-package helm-bibtex
+  :general
+  (dcao-leader-def
+    "o p" 'helm-bibtex)
+  :config
+  (setq bibtex-completion-bibliography (list (concat dcao/org-root "../papers/papers.bib"))
+        bibtex-library-completion-path (list (concat dcao/org-root "../papers"))
+        bibtex-completion-pdf-field "file"))
+#+end_src
