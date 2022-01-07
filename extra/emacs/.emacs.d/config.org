@@ -1,5 +1,5 @@
-#+TITLE: config.org
-#+SUBTITLE: david's emacs config
+#+title: config.org
+#+subtitle: david's emacs config
 
 inspiration: https://github.com/angrybacon/dotemacs
 
@@ -7,20 +7,23 @@ inspiration: https://github.com/angrybacon/dotemacs
 ** Better defaults
 When we're running in GUI mode, we want to disable cursor blinking, the scroll bar, and the toolbar.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (when window-system
   (blink-cursor-mode 0) ; Disable the cursor blinking
   (scroll-bar-mode 0)   ; Disable the scroll bar
   (tool-bar-mode 0)     ; Disable the tool bar
   (tooltip-mode 1))     ; Enable the tooltips
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (xterm-mouse-mode 1)
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
+(setq evil-want-keybinding nil)
 (setq-default
+ mac-function-modifier 'hyper
+
  ad-redefinition-action 'accept                   ; Silence warnings for redefinition
  auto-window-vscroll nil                          ; Lighten vertical scroll
  confirm-kill-emacs nil                           ; Confirm before exiting Emacs
@@ -33,7 +36,7 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
  help-window-select t                             ; Focus new help windows when opened
  indent-tabs-mode nil                             ; Stop using tabs to indent
  inhibit-startup-screen t                         ; Disable start-up screen
- initial-major-mode 'fundamental-mode
+ initial-major-mode 'literate-calc-mode
  initial-scratch-message ""                       ; Empty the initial *scratch* buffer
  scroll-conservatively most-positive-fixnum       ; Always scroll by one line
  scroll-margin 10                                 ; Add a margin when scrolling vertically
@@ -71,59 +74,70 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 
 (cd "~/")                                         ; Move to the user directory
 (delete-selection-mode 1)                         ; Replace region when inserting text
-(display-time-mode 1)                             ; Enable time in the mode-line
+; (display-time-mode 1)                             ; Enable time in the mode-line
 (fset 'yes-or-no-p 'y-or-n-p)                     ; Replace yes/no prompts with y/n
 (global-subword-mode 1)                           ; Iterate through CamelCase words
-(menu-bar-mode 0)                                 ; Disable the menu bar
+; https://github.com/railwaycat/homebrew-emacsmacport/issues/139
+(menu-bar-mode 1)
 (put 'downcase-region 'disabled nil)              ; Enable downcase-region
 (put 'upcase-region 'disabled nil)                ; Enable upcase-region
 (set-default-coding-systems 'utf-8)               ; Default to utf-8 encoding
 (column-number-mode)                              ; Show col nums in modeline
-#+END_SRC
+#+end_src
 *** Backups
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (setq backup-directory-alist `(("." . "~/.saves")))
 (setq backup-by-copying t)
-#+END_SRC
+#+end_src
 ** Custom file
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (setq-default custom-file (expand-file-name ".custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
-#+END_SRC
+#+end_src
 ** Miscellaneous delights
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (delight '((subword-mode nil t)
            (eldoc-mode nil t)))
-#+END_SRC
-** Evil
-#+BEGIN_SRC emacs-lisp
+#+end_src
+* Evil
+#+begin_src emacs-lisp
+(use-package undo-fu)
+
 (use-package evil
-  :delight
-  (global-undo-tree-mode)
+  :custom
+  (evil-undo-system 'undo-fu)
+  (evil-want-keybindings nil)
   :init
-  (setq evil-want-keybindings nil)
-  (setq evil-undo-system 'undo-tree)
-  (global-undo-tree-mode)
   (setq
    evil-want-C-u-scroll t
+   evil-undo-system 'undo-fu
    evil-want-C-i-jump nil)
   (evil-mode)
-  (evil-normalize-keymaps))
+  (evil-normalize-keymaps)
+  (setq-default evil-undo-system 'undo-fu)
+  :config
+  (define-key evil-normal-state-map "u" 'undo-fu-only-undo)
+  (define-key evil-normal-state-map "\C-r" 'undo-fu-only-redo))
+
+(add-hook 'window-configuration-change-hook #'evil-normalize-keymaps)
+(add-hook 'org-src-mode-hook #'evil-normalize-keymaps)
 
 (use-package evil-collection
   :after evil
+  :init
+  (setq evil-want-keybindings nil)
   :config
   (evil-collection-init '(magit notmuch calendar dired pdf)))
-#+END_SRC
+#+end_src
 *** Evil Fringe Mark
 To show marks in the left fringe of the editor.
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package evil-fringe-mark
   :delight global-evil-fringe-mark-mode
   :config
   (global-evil-fringe-mark-mode))
-#+END_SRC 
+#+end_src 
 *** evil-numbers
 #+begin_src emacs-lisp
 (use-package evil-numbers)
@@ -136,14 +150,14 @@ To show marks in the left fringe of the editor.
 #+end_src
 ** general.el
 *** Leader definitions
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defconst dcao/leader-key "SPC")
 (defconst dcao/leader-key-alt "C-SPC")
 (defconst dcao/local-leader-key "SPC m")
 (defconst dcao/local-leader-key-alt "C-SPC m")
-#+END_SRC
+#+end_src
 *** Bind configuration
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package general
     :after evil
     :init
@@ -151,6 +165,7 @@ To show marks in the left fringe of the editor.
     :config
     (general-evil-setup t)
     (general-unbind 'normal dcao/leader-key)
+    (general-unbind 'emacs dcao/leader-key)
     (general-unbind dcao/leader-key-alt)
     
     (general-create-definer dcao-leader-def
@@ -160,10 +175,15 @@ To show marks in the left fringe of the editor.
       :prefix dcao/local-leader-key-alt
       :keymaps 'override)
       
-    (general-def '(normal visual emacs) "SPC" (general-simulate-key "C-SPC"))
+    (general-def '(normal visual) "SPC" (general-simulate-key "C-SPC"))
 
     (general-def "<escape>" 'keyboard-escape-quit)
     (general-def "C-w" 'backward-kill-word)
+
+    (general-def "M-w" 'kill-this-buffer)
+    (general-def "M-q" 'delete-window)
+
+    (general-def "M-P" 'execute-extended-command)
 
     (general-def
       :keymaps 'helm-map
@@ -191,6 +211,7 @@ To show marks in the left fringe of the editor.
       "w j" 'evil-window-down
       "w k" 'evil-window-up
       "w l" 'evil-window-right
+      "w n" 'make-frame-command
       "x r" 'dcao/reload-config
       "x q" 'save-buffers-kill-terminal
       "c w" 'count-words
@@ -199,7 +220,7 @@ To show marks in the left fringe of the editor.
     (general-define-key
       :keymaps 'override
       dcao/local-leader-key-alt '(nil :which-key "local leader")))
-#+END_SRC
+#+end_src
 ** buffer-move
 #+begin_src emacs-lisp
 ;;; buffer-move.el --- 
@@ -352,18 +373,60 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 #+end_src
 ** Meta
 *** Config reload
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun dcao/reload-config ()
   (interactive)
   (load-file (expand-file-name "init.el" user-emacs-directory)))
-#+END_SRC
+#+end_src
 *** Config compilation
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun dcao/compile-config ()
   (interactive)
   (byte-compile-file (expand-file-name "config.el" user-emacs-directory))
   (byte-compile-file (expand-file-name "init.el" user-emacs-directory)))
-#+END_SRC
+#+end_src
+** init shell
+#+begin_src emacs-lisp
+(use-package exec-path-from-shell
+  :init
+  (setq exec-path-from-shell-arguments nil)
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
+#+end_src
+** recentf
+#+begin_src emacs-lisp
+(use-package recentf
+  :init
+  (setq recentf-max-saved-items 1000
+        recentf-auto-cleanup 'never
+        recentf-auto-save-timer (run-with-idle-timer 600 t
+                                                     'recentf-save-list))
+
+  :config
+  (recentf-mode 1))
+#+end_src
+** delete this file
+#+begin_src emacs-lisp
+(defun delete-file-and-buffer ()
+  "Kill the current buffer and deletes the file it is visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (if filename
+        (if (y-or-n-p (concat "Do you really want to delete file " filename " ?"))
+            (progn
+              (delete-file filename)
+              (message "Deleted file %s." filename)
+              (kill-buffer)))
+      (message "Not a file visiting buffer!"))))
+
+(dcao-leader-def
+  "f d" 'delete-file-and-buffer)
+#+end_src
+** moving between files
+#+begin_src emacs-lisp
+(general-define-key "<A-M-right>" 'next-buffer
+                    "<A-M-left>"  'previous-buffer)
+#+end_src
 * exwm
 #+begin_src emacs-lisp
 (defun dcao/exwm-launch (command)
@@ -446,7 +509,7 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
     (exwm-input-set-key (kbd "<XF86MonBrightnessDown>") #'desktop-environment-brightness-decrement)
     (exwm-input-set-key (kbd "<XF86Bluetooth>") #'desktop-environment-toggle-bluetooth)
 
-    (require 'cl)
+    (require 'cl-lib)
     (dolist (k '(XF86AudioMute
                  XF86AudioMicMute
                  XF86AudioRaiseVolume
@@ -596,15 +659,15 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 #+end_src
 * UI
 ** Theme
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (eval-and-compile
   (defun dcao/lisp-dir ()
     (expand-file-name "lisp" user-emacs-directory)))
 
 (setq
- dcao/default-font (font-spec :family "Iosevka" :size 16)
- dcao/mono-font (font-spec :family "Iosevka" :size 16)
- dcao/variable-font (font-spec :family "Alegreya" :size 18))
+ dcao/default-font (font-spec :family "Iosevka Custom" :size 14)
+ dcao/mono-font (font-spec :family "Iosevka Custom" :size 14)
+ dcao/variable-font (font-spec :family "iA Writer Quattro S" :size 14 :weight 'ultra-light))
 
 (set-face-attribute 'default nil :font dcao/default-font)
 (set-face-attribute 'fixed-pitch nil :font dcao/mono-font)
@@ -614,13 +677,23 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
   :config
   (load-theme 'doom-gruvbox t)
   (doom-themes-org-config))
-#+END_SRC
+#+end_src
 ** Modeline
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package hide-mode-line)
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
+(use-package simple-modeline
+  :hook (after-init . simple-modeline-mode)
+  :config
+  (setq simple-modeline-word-count-modes '()
+        simple-modeline-segments '((simple-modeline-segment-modified simple-modeline-segment-buffer-name simple-modeline-segment-position)
+                                   (simple-modeline-segment-input-method simple-modeline-segment-vc simple-modeline-segment-misc-info simple-modeline-segment-process simple-modeline-segment-major-mode))
+        ))
+#+end_src
+
+#+begin_src text
 ;; Workaround for https://github.com/seagle0128/doom-modeline/issues/358
 (defun doom-modeline--active ()
   t)
@@ -633,6 +706,7 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
    doom-modeline-minor-modes nil
    doom-modeline-major-mode-icon nil
    doom-modeline-enable-word-count nil
+   doom-modeline-lsp nil
    doom-modeline-indent-info nil
    doom-modeline-buffer-encoding nil
    doom-modeline-checker-simple-format t)
@@ -656,37 +730,38 @@ By default, this shows the information specified by `global-mode-string'."
 
 ;; To fix the right side of the modeline getting cut off (see doom emacs readme)
 (setq all-the-icons-scale-factor 1)
-#+END_SRC
+#+end_src
 ** Misc. settings
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 ;; more useful frame title, that show either a file or a
 ;; buffer name (if the buffer isn't visiting a file)
 (setq frame-title-format
       '((:eval (if (buffer-file-name)
                    (abbreviate-file-name (buffer-file-name))
                  "%b"))))
-#+END_SRC
-#+BEGIN_SRC emacs-lisp
+#+end_src
+#+begin_src emacs-lisp
 (set-frame-parameter nil 'internal-border-width 0)
-#+END_SRC
+#+end_src
 *** Line spacing & linums
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 (setq-default
  display-line-numbers-width 4
  line-spacing 4)
-#+END_SRC
+#+end_src
 ** Shackle
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package shackle
   :config
-  (setq shackle-default-alignment 'below
+  (setq shackle-default-alignment 'right
         shackle-default-size 0.35
-        shackle-rules '(("\\`\\*helm.*?\\*\\'" :regexp t :align t :size 0.35)))
+        shackle-rules '(("\\`\\*helm.*?\\*\\'" :regexp t :align t :size 0.35)
+                        ("\\`\\*org-roam.*?\\*\\'" :regexp t :align 'left :size 0.2)))
   (shackle-mode t))
-#+END_SRC
+#+end_src
 ** Centaur Tabs
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 ; (use-package centaur-tabs
 ;   :demand
 ;   :config
@@ -737,39 +812,34 @@ By default, this shows the information specified by `global-mode-string'."
 ; 	  "org")
 ; 	 (t
 ; 	  (buffer-name)))))
-#+END_SRC
-** SVG Tags
-#+begin_src emacs-lisp
-(use-package svg-tag-mode
-  :straight (:host github :repo "rougier/svg-tag-mode" :branch "main"))
 #+end_src
 ** TODO Eyebrowse
 ** TODO Persp?
 * Features
 ** Direnv
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package direnv
  :config
  (direnv-mode))
-#+END_SRC
+#+end_src
 ** which-key
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package which-key
   :delight which-key-mode
   :init
   (which-key-mode)
   :config
   (setq which-key-idle-delay 0.5))
-#+END_SRC
+#+end_src
 ** Helm
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun +helm|hide-mode-line (&rest _)
   (with-current-buffer (helm-buffer-get)
     (unless helm-mode-line-string
       (hide-mode-line-mode +1))))
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package helm
   :commands (helm-find-files-1 helm-run-external-command)
   :delight helm-mode
@@ -791,7 +861,7 @@ By default, this shows the information specified by `global-mode-string'."
   ; get helm to play nice with shackling
   (setq helm-display-function 'pop-to-buffer)
   (setq helm-autoresize-max-height 35))
-#+END_SRC
+#+end_src
 *** helm-rg
 #+begin_src emacs-lisp
 ; (use-package helm-rg
@@ -809,8 +879,8 @@ By default, this shows the information specified by `global-mode-string'."
 (use-package marginalia
   :general
   (general-define-key
-    :keymaps 'minibuffer-local-map
-    "M-a" 'marginalia-cycle)
+   :keymaps 'minibuffer-local-map
+   "M-a" 'marginalia-cycle)
   
   :init
   ;; Must be in the :init section of use-package such that the mode gets
@@ -833,20 +903,22 @@ By default, this shows the information specified by `global-mode-string'."
 
 (use-package consult
   :straight (:host github
-             :repo "minad/consult"
-             :files ("resources" "resources" "*.el" "*.el"))
+                   :repo "minad/consult"
+                   :files ("resources" "resources" "*.el" "*.el"))
   :general
   (general-define-key
-    "M-x" 'execute-extended-command
-    "C-x f" 'consult-recent-file
-    "C-x b" 'consult-buffer)
+   "M-x" 'execute-extended-command
+   "C-x f" 'consult-recent-file
+   "C-x b" 'consult-buffer)
   (dcao-leader-def
     ":" 'execute-extended-command
     "f f" 'find-file
     "f r" 'consult-recent-file
     "b b" 'consult-buffer
-    "o s" (lambda () (interactive) (consult-ripgrep dcao/org-root))
-    "p s r" (lambda () (interactive) (consult-ripgrep (projectile-project-root)))))
+    "o s" (lambda () (interactive) (consult-ripgrep dcao/org-root))))
+                                        ; "p s r" (lambda () (interactive) (consult-ripgrep (projectile-project-root)))))
+
+(use-package ripgrep)
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult
@@ -858,14 +930,30 @@ By default, this shows the information specified by `global-mode-string'."
   :hook
   (embark-collect-mode . embark-consult-preview-minor-mode))
 
+;; miniframe - to get vscode/sublime-style pop-over for
+;; M-x and projectile-find-file
+(use-package mini-frame
+  :config
+  (custom-set-variables
+   '(mini-frame-show-parameters
+     '((top . 40)
+       (width . 80)
+       (left . 0.5))))
+
+  (mini-frame-mode))
 #+end_src
 ** Company
 #+begin_src emacs-lisp
 (use-package company
-  :hook (after-init . global-company-mode))
+  :config
+  (delete 'company-dabbrev company-backends)
+  (global-company-mode t)
+  (setq company-tooltip-idle-delay 0
+        company-idle-delay 0
+        company-minimum-prefix-length 2))
 #+end_src
 ** Helpful
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package helpful
   :general
   (dcao-leader-def
@@ -877,40 +965,42 @@ By default, this shows the information specified by `global-mode-string'."
    "C-h f" 'helpful-callable
    "C-h v" 'helpful-variable
    "C-h k" 'helpful-key)
-#+END_SRC
+#+end_src
 ** Projectile
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package projectile
   :delight
   :init
   (setq projectile-completion-system 'auto)
   :general
+  (general-def :keymaps 'override "M-p" 'projectile-find-file)
   (dcao-leader-def
-   "p" '(:keymap projectile-command-map :which-key "projectile"))
+   "p" '(:keymap projectile-command-map :which-key "projectile")
+   "f p" 'projectile-switch-project)
   :config
   (projectile-mode +1))
 
 ; (use-package helm-projectile
 ;   :config
 ;   (helm-projectile-on))
-#+END_SRC
+#+end_src
 ** Magit
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package magit
   :general
   (dcao-leader-def
    "g g" 'magit-status))
-#+END_SRC
+#+end_src
 ** Dired
 Adding a keybind to show git info:
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package dired-git-info
   :general
   (:keymaps 'dired-mode-map
    ")" 'dired-git-info-mode))
-#+END_SRC
+#+end_src
 ** Yasnippet
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package yasnippet
   :general
   (dcao-leader-def
@@ -923,12 +1013,12 @@ Adding a keybind to show git info:
   :config
   (setq yas-snippet-dirs '("~/.files/extra/emacs/.emacs.d/snippets"))
   (yas-reload-all))
-#+END_SRC
+#+end_src
 ** Flycheck
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package flycheck
   :init (global-flycheck-mode))
-#+END_SRC
+#+end_src
 ** Persistent scratch
 #+begin_src emacs-lisp
 (use-package persistent-scratch
@@ -940,53 +1030,57 @@ Adding a keybind to show git info:
 (use-package ediff
   :config (set 'ediff-window-setup-function 'ediff-setup-windows-plain))
 #+end_src
+** literate-calc-mode
+#+begin_src emacs-lisp
+(use-package literate-calc-mode
+  :hook (literate-calc-mode . literate-calc-minor-mode))
+#+end_src
+** treemacs
+#+begin_src emacs-lisp
+(use-package treemacs
+  :general
+  (general-def
+    :keymaps 'treemacs-mode-map
+    [mouse-1] 'treemacs-single-click-expand-action)
+  :custom-face
+  (treemacs-root-face ((t (:height 1.0)))))
+(use-package treemacs-evil)
+(use-package treemacs-projectile)
+#+end_src
+** rmsbolt
+#+begin_src emacs-lisp
+(use-package rmsbolt)
+#+end_src
 * Languages
 ** Haskell
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package haskell-mode
   :hook ((haskell-mode . direnv-update-environment))
   :mode "\\.hs\\'")
-
-; (use-package dante
-;   :commands 'dante-mode
-;   :hook ((haskell-mode-hook . dante-mode))
-;   :config
-;   (setq dante-debug '(inputs outputs responses command-line))
-;   (setq dante-methods '(stack new-impure-nix new-build bare-ghci)))
-
-; (use-package lsp-haskell
-;   :hook ((haskell-mode-hook . lsp-mode))
-;   :init
-;   (setq lsp-haskell-process-wrapper-function
-;     (lambda (argv)
-;       (append
-;         (append (list "nix-shell" "-I" "." "--command" )
-;                 (list (mapconcat 'identity argv " ")))
-;         (list (concat (lsp-haskell--get-root) "/shell.nix"))))))
-#+END_SRC
+#+end_src
 ** Rust
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package rust-mode
   :mode "\\.rs\\'")
-#+END_SRC
+#+end_src
 ** Markdown
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package markdown-mode
   :mode "\\.md\\'")
-#+END_SRC
+#+end_src
 ** Lua
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package lua-mode
   :mode "\\.lua\\'"
   :interpreter "lua")
-#+END_SRC
+#+end_src
 ** Idris
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package idris-mode
   :mode (("\\.idr$" . idris-mode)
          ("\\.ipkg$" . idris-ipkg-mode)
          ("\\.lidr$" . idris-mode)))
-#+END_SRC
+#+end_src
 ** Nix
 #+begin_src emacs-lisp
 (use-package nix-mode
@@ -994,15 +1088,15 @@ Adding a keybind to show git info:
 #+end_src
 ** Lisp
 *** Rainbow Delimeters
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :init
   (progn
     (add-hook 'lisp-mode-hook 'rainbow-delimiters-mode)
     (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)))
-#+END_SRC
+#+end_src
 *** Parinfer
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package parinfer
   :after evil
   :general
@@ -1022,9 +1116,9 @@ Adding a keybind to show git info:
     (add-hook 'common-lisp-mode-hook #'parinfer-mode)
     (add-hook 'scheme-mode-hook #'parinfer-mode)
     (add-hook 'lisp-mode-hook #'parinfer-mode)))
-#+END_SRC
+#+end_src
 *** Common Lisp
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package sly
   :commands sly
   :general
@@ -1037,24 +1131,20 @@ Adding a keybind to show git info:
   :config
   (use-package sly-macrostep)
   (setq inferior-lisp-program "sbcl"))
-#+END_SRC
+#+end_src
 ** LaTeX
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 ; (use-package tex-mode
 ;   :defer t
 ;   :config
 ;   (setq TeX-auto-save t))
-#+END_SRC
+#+end_src
 ** Org
 *** Basic config
-#+BEGIN_SRC emacs-lisp
-(defvar dcao/org-root (concat (getenv "HOME") "/default/org/"))
+#+begin_src emacs-lisp
+(defvar dcao/org-root (concat (getenv "HOME") "/Dropbox/org/"))
+(defvar dcao/org-journal (concat dcao/org-root "j/"))
 (defvar dcao/org-inbox-template "* TODO %^{Task}
-:PROPERTIES:
-:CREATED: %U
-:END:
-%i")
-(defvar dcao/org-journal-template "* %^{Title}
 :PROPERTIES:
 :CREATED: %U
 :END:
@@ -1071,7 +1161,16 @@ Adding a keybind to show git info:
       org-log-into-drawer t
       org-expiry-inactive-timestamps t
       org-default-priority ?C
-      org-ellipsis "  "
+      org-agenda-show-outline-path t
+      
+      org-ellipsis " ▾ "
+      org-pretty-entities t
+      org-hide-emphasis-markers t
+      org-agenda-block-separator ""
+      org-fontify-whole-heading-line t
+      org-fontify-done-headline t
+      org-fontify-quote-and-verse-blocks t
+
       org-lowest-priority ?D
       org-preview-latex-default-process 'imagemagick ; faster
       ;; refile
@@ -1080,32 +1179,35 @@ Adding a keybind to show git info:
       org-outline-path-complete-in-steps nil
       org-refile-allow-creating-parent-nodes 'confirm
       ;; contacts
-      org-contacts-files `(,(concat dcao/org-root "ppl.org"))
+      org-contacts-files `(,(concat dcao/org-root "people.org"))
       ;; capture
       org-capture-templates
-      `(("t" "inbox todo" entry (file ,(concat dcao/org-root "inbox.org"))
-         ,dcao/org-inbox-template)
-        ("j" "journal" entry (file ,(concat dcao/org-root "journal.org"))
-         ,dcao/org-journal-template)))
-#+END_SRC
+      `(("t" "inbox todo" entry (file+olp ,(concat dcao/org-root "index.org") "miscellany")
+         ,dcao/org-inbox-template)))
+#+end_src
 **** Agenda modifications
 I want to have a line above every day in the agenda. This does that:
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (setq org-agenda-format-date (lambda (date) (concat "\n"
                                                     (make-string (window-width) 9472)
                                                     "\n"
                                                     (org-agenda-format-date-aligned date))))
-#+END_SRC
+#+end_src
+*** todo keywords
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "|" "DONE")))
+#+end_src
 *** Fix newline/indent in src blocks
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun dcao/fix-newline-and-indent-in-src-blocks ()
   "Try to mimic `newline-and-indent' with correct indentation in src blocks."
   (when (org-in-src-block-p t)
     (org-babel-do-in-edit-buffer
      (call-interactively #'indent-for-tab-command))))
-#+END_SRC
+#+end_src
 *** Package config
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun dcao/org/get-todo-keywords-for (keyword)
   (when keyword
     (cl-loop for (type . keyword-spec) in org-todo-keywords
@@ -1116,8 +1218,8 @@ I want to have a line above every day in the agenda. This does that:
              if (eq type 'sequence)
              if (member keyword keywords)
              return keywords)))
-#+END_SRC
-#+BEGIN_SRC emacs-lisp
+#+end_src
+#+begin_src emacs-lisp
 (defun dcao/org/refresh-inline-images ()
   "Refresh image previews in the current heading/tree."
   (interactive)
@@ -1132,9 +1234,84 @@ I want to have a line above every day in the agenda. This does that:
      (if (org-before-first-heading-p)
          (line-end-position)
        (save-excursion (org-end-of-subtree) (point))))))
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
+(defun dcao/org/cw (&optional strict really-word)
+  "Get region of word at or near point. Derived from current-word."
+  (save-excursion
+    (let* ((oldpoint (point)) (start (point)) (end (point))
+	       (syntaxes (if really-word "w" "w_"))
+	       (not-syntaxes (concat "^" syntaxes)))
+      (skip-syntax-backward syntaxes) (setq start (point))
+      (goto-char oldpoint)
+      (skip-syntax-forward syntaxes) (setq end (point))
+      (when (and (eq start oldpoint) (eq end oldpoint)
+		         ;; Point is neither within nor adjacent to a word.
+		         (not strict))
+	    ;; Look for preceding word in same line.
+	    (skip-syntax-backward not-syntaxes (line-beginning-position))
+	    (if (bolp)
+	        ;; No preceding word in same line.
+	        ;; Look for following word in same line.
+	        (progn
+	          (skip-syntax-forward not-syntaxes (line-end-position))
+	          (setq start (point))
+	          (skip-syntax-forward syntaxes)
+	          (setq end (point)))
+	      (setq end (point))
+	      (skip-syntax-backward syntaxes)
+	      (setq start (point))))
+      ;; If we found something nonempty, return it as a string.
+      (unless (= start end)
+	    (list start end)))))
+
+; (defun dcao/org/insert-link ()
+;   (interactive)
+;   (let* ((start (if (use-region-p)
+;                     (region-beginning)
+;                   (car (dcao/org/cw))))
+;          (end (if (use-region-p)
+;                   (region-end)
+;                 (cadr (dcao/org/cw))))
+;          (str (buffer-substring-no-properties start end))
+;          (clean-str (replace-regexp-in-string "[[:space:]]+" "_"
+;                                             (string-trim str)))
+;          ; TODO: use reg file links or roam links?
+;          (new-str (concat "[[file:" clean-str ".txt]]")))
+;     (replace-region-contents start end (lambda () new-str))))
+
+(defun dcao/org/insert-link ()
+  (interactive)
+  (let* ((beg (if (use-region-p)
+                    (region-beginning)
+                  (car (dcao/org/cw))))
+         (end (if (use-region-p)
+                  (region-end)
+                (cadr (dcao/org/cw))))
+         (str (buffer-substring-no-properties beg end))
+         (roam-id (caar (append
+         (org-roam-db-query [:select [id]
+                                     :from nodes
+                                     :where (= title $s1)] str)
+         (org-roam-db-query [:select [alias node-id]
+                                     :from aliases
+                                     :left-join nodes
+                                     :on (= aliases:node-id nodes:id)
+                                     :where (= alias $1)] str)))))
+    (if roam-id
+        (replace-region-contents beg end (lambda () (org-link-make-string (concat "id:" roam-id) str)))
+      (org-roam-capture-
+       :node (org-roam-node-create :title str)
+             :props (append
+                     ; (when (and beg end)
+                     ;   (list :region (cons beg end)))
+                     (list :region (cons (set-marker (make-marker) beg) (set-marker (make-marker) end))
+                           :insert-at (point-marker)
+                           :link-description str
+                           :finalize 'insert-link
+                           :immediate-finish t))))))
+
 (defun dcao/org/dwim-at-point ()
   "Do-what-I-mean at point.
 If on a:
@@ -1150,7 +1327,7 @@ If on a:
 - statistics-cookie: update it.
 - latex fragment: toggle it.
 - link: follow it
-- otherwise, refresh all inline images in current tree."
+- otherwise, insert a link to an org file corresponding to the Word under point, or the region selected with the cursor (with spaces replaced with underscores), and refresh all inline images in current tree."
   (interactive)
   (let* ((context (org-element-context))
          (type (org-element-type context)))
@@ -1227,15 +1404,25 @@ If on a:
              (dcao/org/refresh-inline-images)
            (org-open-at-point))))
 
-      (_ (dcao/org/refresh-inline-images)))))
-#+END_SRC
+      (_ (progn
+           (dcao/org/insert-link)
+           (dcao/org/refresh-inline-images))))))
 
-#+BEGIN_SRC emacs-lisp
+(defun dcao/org/dwim-daily ()
+  (interactive)
+  (find-file (concat dcao/org-root "inbox.org"))
+  (goto-char (point-min))
+  (let* ((tstr (format-time-string "%F"))
+         (p (re-search-forward (concat "* " (format-time-string "%F")) nil 'past)))
+    (unless p
+      (insert (concat "\n* " tstr)))))
+#+end_src
+
+#+begin_src emacs-lisp
 (use-package evil-org
   :delight evil-org-mode
   :hook
   (org-mode . evil-org-mode)
-  (org-mode . olivetti-mode)
   :init
   (defvar evil-org-key-theme '(navigation insert textobjects))
   (defvar evil-org-special-o/O '(table-row))
@@ -1244,9 +1431,9 @@ If on a:
   (add-hook 'org-open-at-point-functions #'evil-set-jump)
   ;; change `evil-org-key-theme' instead
   (advice-add #'evil-org-set-key-theme :override #'ignore))
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 ; (require 'subr-x)
 ; (straight-use-package 'git)
 ; 
@@ -1292,7 +1479,28 @@ If on a:
     (let ((default-directory ,dir))
       (call-interactively 'find-file))))
 
+(defun org-show-current-heading-tidily ()
+  (interactive)  ;Inteactive
+  "Show next entry, keeping other entries closed."
+  (if (save-excursion (end-of-line) (outline-invisible-p))
+      (progn (org-show-entry) (show-children))
+    (outline-back-to-heading)
+    (unless (and (bolp) (org-on-heading-p))
+      (org-up-heading-safe)
+      (hide-subtree)
+      (error "Boundary reached"))
+    (org-overview)
+    (org-reveal t)
+    (org-show-entry)
+    (show-children)))
+
+(defun dcao/org-update-all ()
+  (interactive)
+  (org-update-all-dblocks)
+  (let ((current-prefix-arg '(4))) (call-interactively 'org-update-statistics-cookies)))
+
 (use-package org-plus-contrib
+  :hook (org-mode . org-indent-mode)
   :general
   (dcao-leader-def
    "o" '(:ignore t :which-key "org")
@@ -1301,7 +1509,12 @@ If on a:
    "o f" (dcao/find-in-dir dcao/org-root)
    "f o" (dcao/find-in-dir dcao/org-root))
   (:keymaps 'org-mode-map
-   "M-h" nil)
+   "<C-tab>" 'org-show-current-heading-tidily
+   "M-h" nil
+   "M-e" 'dcao/org-update-all
+   "M-d" 'dcao/org/dwim-daily
+   "<C-M-right>" 'org-narrow-to-subtree
+   "<C-M-left>" 'widen)
   (:states 'normal
    :keymaps 'org-mode-map
    [return] 'dcao/org/dwim-at-point
@@ -1313,15 +1526,14 @@ If on a:
   (dcao-local-leader-def
    :keymaps 'org-mode-map
    "a" 'org-archive-subtree
+   "d" 'org-update-all-dblocks
    "e" 'org-expiry-insert-created
    "r" 'org-refile
    "n" 'org-narrow-to-subtree
    "s" 'org-schedule
    "w" 'widen
    "x" 'org-export-dispatch
-   "t" 'org-todo
    "m" 'org-time-stamp
-   "i" 'org-insert-link
    "p" 'org-set-property
    "c" '(:ignore t :which-key "clock")
    "c i" 'org-clock-in
@@ -1341,123 +1553,19 @@ If on a:
         (org-save-all-org-buffers)))
   (add-to-list 'org-modules 'org-habit))
         
-(require 'org-contacts)
+; (require 'org-contacts)
 (require 'org-habit)
-(require 'org-expiry)
-#+END_SRC
-*** Rifling
-#+BEGIN_SRC emacs-lisp
-;; (use-package helm-org-rifle
-;;   :after org
-;;   :general
-;;   (dcao-leader-def
-;;    "o r" 'helm-org-rifle-agenda-files)
-;;   :config
-;;   (setq helm-org-rifle-show-path t))
-
-
-(use-package a)
-
-(require 'org-ql-view)
-
-(defun baal-org-ql--format-element (line)
-  "Format org heading LINE derived from org-ql-views.
-Adding file name and outline path for more robust filtering in minibuffer."
-  (let* ((marker (get-text-property 0 'org-hd-marker line))
-         (level (get-text-property 0 'level line))
-         (file (propertize (org-with-point-at marker
-                             (or (file-name-nondirectory (buffer-file-name (buffer-base-buffer))))) 'face 'success))
-         (path (when (> level 1)
-                 (propertize (org-with-point-at marker
-                               (mapconcat #'substring-no-properties (org-get-outline-path nil t) "/")) 'face 'completions-annotations)))
-         (new (concat file ":" (make-string (- 15 (length file)) ? )
-                      line (when path " | ") path))
-         (props (text-properties-at 0 line)))
-    (org-add-props new props)))
-(defun baal-org-ql--current-headline ()
-  "Format the current entry headline.
-Used as the default candidate when searching `current-buffer'."
-  (save-excursion
-    (when (derived-mode-p 'org-mode)
-      (unless (or (org-before-first-heading-p)
-                  (org-in-archived-heading-p))
-        (org-back-to-heading)
-        (baal-org-ql--format-element
-         (org-ql-view--format-element
-          (org-ql--add-markers
-           (org-element-headline-parser (line-end-position)))))))))
-(defun baal-org-ql--candidates (&optional arg archive)
-  "Collect headlines in all selected org files.
-ARG controls whether to search current buffer, open org buffers, and
-org-agenda-files.  Search headlines in ARCHIVE when non-nil."
-  (let* ((buf-name (buffer-file-name))
-         (base (buffer-base-buffer))
-         (-compare-fn #'file-equal-p)
-         (b (pcase arg
-              ('3 (org-files-list))
-              ('(4) (-uniq
-                     (append (org-agenda-files)
-                             (when (derived-mode-p 'org-mode)
-                               (list (or buf-name
-                                         (buffer-file-name base)))))))
-              (_ (or buf-name
-                     base))))
-         (cands (->> (org-ql-select b
-                       (if archive
-                           '(tags "ARCHIVE")
-                         ;; entries & files tagged with noql are not searched. TODO
-                         ;; look into restricting search for only headlines with
-                         ;; custom ids. (may be faster but obviously not as inclusive).
-                         '(not (tags "noql" "ARCHIVE")))
-                       :action 'element-with-markers
-                       ;; When searching current-buffer sort headlines by default
-                       ;; buffer-order. Otherwise, sort by random order.
-                       :sort (when arg '(random)))
-                     (--map (baal-org-ql--format-element
-                             (org-ql-view--format-element it))))))
-    (cl-loop for cand being the elements of cands
-             for id = (get-text-property 0 'ID cand)
-             for mark = (get-text-property 0 'org-hd-marker cand)
-             for title = (get-text-property 0 'raw-value cand)
-             collect (cons cand (a-list :id id :mark mark :title title)))))
-(defvar baal-org-ql-goto-heading-history nil)
-
-(defun baal-org-ql-goto-heading (&optional arg archive)
-  "Go to the location of a custom ID, selected interactively.
-ARG and ARCHIVE passed to `baal-org-ql--candidates'."
-  (interactive "P")
-  (let* ((prescient-sort-length-enable nil)
-         (buff (current-buffer))
-         (prompt (if archive "[GOTO] Archive: " "[GOTO] Headline: "))
-         (default (baal-org-ql--current-headline))
-         (cands (baal-org-ql--candidates arg archive))
-         (entry
-          ;; standard completing-read configuration
-          ;;
-          ;; (completing-read prompt cands
-          ;;                  nil nil nil baal-org-ql-goto-heading-history
-          ;;                  (unless arg default))
-          (selectrum-read prompt nil
-                          :minibuffer-completion-table cands
-                          :history baal-org-ql-goto-heading-history
-                          :default-candidate (unless arg default)
-                          :no-move-default-candidate t))
-         (marker (a-get (cdr (assoc-string entry cands)) :mark)))
-    (if marker
-        (progn
-          (org-goto-marker-or-bmk marker)
-          (baal-org-post-follow-hooks buff))
-      (org-capture nil "i")
-      (insert entry))))
-
-(baal-org-ql-goto-heading '(4))
-
-(dcao-leader-def
- "o r" '(lambda () (interactive) (baal-org-ql-goto-heading '(4))))
-#+END_SRC
+; (require 'org-expiry)
+#+end_src
+*** org-contacts (for birthdays)
+#+begin_src emacs-lisp
+(use-package org-contrib
+  :config
+  (use-package org-contacts))
+#+end_src
 *** Fixing stupid angle brackets in source blocks
 Angle brackets are highlighted as mismatched brackets, but it's just comparisons!!
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun org-mode-<>-syntax-fix (start end)
   "Change syntax of characters ?< and ?> to symbol within source code blocks."
   (let ((case-fold-search t))
@@ -1481,7 +1589,7 @@ Add this function to `org-mode-hook'."
 
 ; doesn't work for now?
 ; (add-hook 'org-mode-hook #'org-setup-<>-syntax-fix)
-#+END_SRC
+#+end_src
 *** org-timeline
 This is the code for org-timeline from https://github.com/deopurkar/org-timeline.
 
@@ -1491,7 +1599,7 @@ some of our own changes:
 - Fix bug with tasks that cross the date threshold (12am) - they're no longer offset
 - Fix bug with tasks that cross the date and line threshold - it no longer crashes
 - If an item is DONE, it can't be conflicted with
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 ;;; org-timeline.el --- Add graphical view of agenda to agenda buffer. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Matúš Goljer
@@ -1720,17 +1828,17 @@ Return new copy of STRING."
 (add-hook 'org-agenda-finalize-hook 'org-timeline-insert-timeline :append)
                                         ; To show all timed items
 (setq org-timeline-default-duration 15)
-#+END_SRC
+#+end_src
 *** Custom org-agenda command
 #+begin_src emacs-lisp
-(use-package helm-org)
 (use-package org-ql
-  :commands org-ql--plain-query
+  :demand t
+  :commands (org-dblock-write:org-ql)
+  :straight (:host github :repo "dcao/org-ql" :branch "master")
+
   :config
-  (use-package helm-org-ql
-    :general
-    (dcao-leader-def
-    "o r" 'helm-org-ql-agenda-files)))
+  (setq org-ql-ask-unsafe-queries nil)
+  (require 'org-ql-search))
 
 ; https://emacs.stackexchange.com/questions/18179/org-agenda-command-with-org-agenda-filter-by-tag-not-working
 ; https://stackoverflow.com/questions/10074016/org-mode-filter-on-tag-in-agenda-view/33444799#33444799
@@ -1778,17 +1886,18 @@ If OTHERS is true, skip all entries that do not correspond to TAG."
 
 (setq org-agenda-custom-commands
       '(("a" "dcao view"
-         ((org-ql-block '(tags-local "goal")
-                        ((org-ql-block-header "goals")))
-          (org-ql-block '(tags-local "focus")
-                        ((org-ql-block-header "focus")))
-          ; (org-ql-block '(and (todo) (scheduled :to 0) (tags-local "lec"))
-          ;               ((org-ql-block-header "overdue lectures")))
+         ((todo "NEXT")
           (agenda "" ((org-agenda-span 'week)
-                      (org-agenda-skip-function '(zin/org-agenda-skip-tag "lec"))))))
+                      (org-agenda-skip-function '(zin/org-agenda-skip-tag "lec")))))
+         ((org-use-tag-inheritance nil)))
         ("l" "lectures"
          ((org-ql-block '(and (todo) (scheduled :to 0) (tags-local "lec"))
                         ((org-ql-block-header "overdue lectures")))))
+        ("g" "goals n focus"
+         ((org-ql-block '(tags-local "goal")
+                        ((org-ql-block-header "goals")))
+          (org-ql-block '(tags-local "focus")
+                        ((org-ql-block-header "focus")))))
         ("t" "dcao view other thing"
          ((tags-todo "focus")
           (agenda))
@@ -1804,41 +1913,74 @@ If OTHERS is true, skip all entries that do not correspond to TAG."
 *** texfrag
 #+begin_src emacs-lisp
 (use-package texfrag
+  :straight (:host github :repo "TobiasZawada/texfrag" :branch "autogen")
   :general
   (dcao-local-leader-def
    :keymaps 'org-mode-map
    "l" 'texfrag-document)
   :config
-  (texfrag-global-mode))
+  (texfrag-global-mode)
+  (setq texfrag-scale 0.6))
 #+end_src
-*** Second brain - org-roam
+*** org-roam
 #+begin_src emacs-lisp
-(use-package org-roam
-  :delight
-  :after org
-  :hook (after-init . org-roam-mode)
-  :custom
-  (org-roam-directory (concat dcao/org-root "brain"))
-  :general
-  (dcao-leader-def
-   "o b" 'org-roam
-   "o i" 'org-roam-insert
-   "o d" 'org-roam-find-file
-   "o g" 'org-roam-show-graph)
-   :config
-   (setq org-roam-ref-capture-templates
-    '(("r" "ref" plain (function org-roam--capture-get-point)
-       ""
-       :file-name "${slug}"
-       :head "#+title: ${title}
-,#+roam_key: ${ref}
-,#+latex_header: \\usepackage{prftree}\n"
-       :unnarrowed t))))
+(defun dcao/org-roam-complete-everywhere ()
+  "Provides completions for links for any word at point.
+This is a `completion-at-point' function, and is active when
+`org-roam-completion-everywhere' is non-nil."
+  (when (and org-roam-completion-everywhere
+             (thing-at-point 'word)
+             (not (save-match-data (org-in-regexp org-link-any-re))))
+    (let ((bounds (bounds-of-thing-at-point 'word)))
+      (list (car bounds) (cdr bounds)
+            (completion-table-dynamic
+             (lambda (_)
+               (funcall #'org-roam--get-titles)))
+            :exit-function
+            (lambda (str _status)
+              (delete-char (- (length str)))
+              (let* ((id1 (caar (org-roam-db-query [:select id :from nodes :where (= title $s1)] (substring-no-properties str))))
+                     (id2 (if id1 id1 (caar (org-roam-db-query [:select node-id :from aliases :where (= alias $s1)] (substring-no-properties str))))))
+              (insert "[[id:" id2 "][" (substring-no-properties str) "]]")))))))
 
-(use-package company-org-roam
-  :straight (:host github :repo "org-roam/company-org-roam")
+(use-package org-roam
+  :demand t
+  :commands (org-roam-db-autosync-mode org-roam-db-query)
+  :straight (:host github :repo "org-roam/org-roam"
+             :files (:defaults "extensions/*"))  
+  :hook (org-roam-mode . turn-on-visual-line-mode)
+  :general
+  (:keymap org-mode-map
+           "C-c C-i" 'org-id-get-create)
+  :custom
+  (org-roam-directory dcao/org-root)
+  :general
+  (general-def
+    "M-o" 'org-roam-node-find
+    "M-b" 'org-roam-buffer-toggle)
+  (dcao-leader-def
+    "o b" 'org-roam-buffer-toggle
+    "o i" 'org-roam-node-insert
+    "o d" 'org-roam-node-find
+    "d" 'org-roam-node-find
+    "o g" 'org-roam-graph)
+  (dcao-local-leader-def
+    "i" 'org-id-get-create)
+
   :config
-  (push 'company-org-roam company-backends))
+  (setq org-roam-capture-templates '(("d" "default" plain "%?"
+     :if-new (file+head "${slug}.org"
+                        "#+title: ${title}\n")
+     :unnarrowed t)))
+  (setq org-roam-completion-everywhere t
+        org-roam-completion-functions '(org-roam-complete-link-at-point dcao/org-roam-complete-everywhere))
+  (org-roam-db-autosync-enable))
+
+; So that org mode handles txt files too
+(add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
+
+; So that agenda picks up on these txt files
+(setq org-agenda-file-regexp "\\`[^.].*\\(\\.org\\|\\.txt\\)\\'")
 #+end_src
 *** org-krita
 #+begin_src emacs-lisp
@@ -1854,19 +1996,14 @@ If OTHERS is true, skip all entries that do not correspond to TAG."
 #+end_src
 *** Focus
 **** org-superstar
-Used to hide bullets.
-
 #+begin_src emacs-lisp
 (use-package org-superstar
   :after org
   :config
   (setq org-superstar-remove-leading-stars nil)
-  (setq org-superstar-headline-bullets-list '(" ")) ;; '("🞛" "◉" "○" "▷")
-  (setq org-superstar-item-bullet-alist
-        '((?+ . ?•)
-          (?* . ?➤)
-          (?- . ?–)))
-  (org-superstar-mode -1))
+  (setq org-superstar-headline-bullets-list '("◉" ("🞛" ?◈) "○" "▷"))
+  ;; Stop cycling bullets to emphasize hierarchy of headlines.
+  (setq org-superstar-cycle-headline-bullets nil))
 #+end_src
 **** Modifying org faces for variable font mode
 Making sure that monospaced parts are monospaced:
@@ -1918,9 +2055,12 @@ Making sure that monospaced parts are monospaced:
 **** Olivetti
 #+begin_src emacs-lisp
 (use-package olivetti
+  :hook
+  (org-mode . olivetti-mode)
+  (markdown-mode . olivetti-mode)
   :commands olivetti-mode
   :config
-  (setq-default olivetti-body-width 80)
+  (setq-default olivetti-body-width 82)
   (setq-default olivetti-minimum-body-width 40))
 #+end_src
 **** focus mode
@@ -1946,14 +2086,224 @@ Making sure that monospaced parts are monospaced:
   :keymaps 'org-mode-map
    "f" 'dcao/focus-mode)
 #+end_src
+**** prettify symbols and font things
+#+begin_src emacs-lisp
+; (set-face-attribute 'org-level-8 nil :weight 'bold :inherit 'default)
+; ;; Low levels are unimportant => no scaling
+; (set-face-attribute 'org-level-7 nil :inherit 'org-level-8)
+; (set-face-attribute 'org-level-6 nil :inherit 'org-level-8)
+; (set-face-attribute 'org-level-5 nil :inherit 'org-level-8)
+; (set-face-attribute 'org-level-4 nil :inherit 'org-level-8)
+; ;; Top ones get scaled the same as in LaTeX (\large, \Large, \LARGE)
+; (set-face-attribute 'org-level-3 nil :inherit 'org-level-8) ;\large
+; (set-face-attribute 'org-level-2 nil :inherit 'org-level-8) ;\Large
+; (set-face-attribute 'org-level-1 nil :inherit 'org-level-8) ;\LARGE
+
+(defun org-pretty-symbols-mode ()
+    (push '("#+title: "        . "") prettify-symbols-alist)
+    (push '("#+subtitle: "     . "") prettify-symbols-alist)
+    (push '("#+author: "       . "- ") prettify-symbols-alist)
+    (push '(":properties:"     . "⋯") prettify-symbols-alist)
+    (push '(":PROPERTIES:"     . "⋯") prettify-symbols-alist)
+    (push '(":LOGBOOK:"     . "⧖") prettify-symbols-alist)
+    (push '("#+begin_src"      . "λ") prettify-symbols-alist)
+    (push '("#+end_src"        . "⋯") prettify-symbols-alist)
+    (push '("#+results:"       . "»") prettify-symbols-alist)
+    (push '(":end:"            . "⋯") prettify-symbols-alist)
+    (push '(":END:"            . "⋯") prettify-symbols-alist)
+    (push '(":results:"        . "⋯") prettify-symbols-alist)
+    (push '("#+name:"          . "-") prettify-symbols-alist)
+    (push '("#+begin_example"  . "†") prettify-symbols-alist)
+    (push '("#+end_example"    . "⋯") prettify-symbols-alist)
+    (push '("#+begin_quote"    . "𐄚") prettify-symbols-alist)
+    (push '("#+end_quote"      . "𐄚") prettify-symbols-alist)
+    (push '("#+tblfm:"         . "∫") prettify-symbols-alist)
+    (push '("\\\\"             . "↩") prettify-symbols-alist)
+    (prettify-symbols-mode t))
+
+; (add-hook 'org-mode-hook 'org-superstar-mode)
+(add-hook 'org-mode-hook 'org-pretty-symbols-mode)
+#+end_src
+*** Notifications (macOS)
+#+begin_src emacs-lisp
+(require 'appt)
+
+(setq appt-time-msg-list nil)    ;; clear existing appt list
+(setq appt-display-interval '10)
+(setq
+  appt-message-warning-time '10  ;; send first warning 15 minutes before appointment
+  appt-display-mode-line nil     ;; don't show in the modeline
+  appt-display-format 'window)   ;; pass warnings to the designated window function
+(setq appt-disp-window-function (function ct/appt-display-native))
+
+(appt-activate 1)                ;; activate appointment notification
+; (display-time) ;; Clock in modeline
+
+(defun ct/send-notification (title msg)
+  (let ((notifier-path (executable-find "terminal-notifier")))
+       (start-process 
+           "Appointment Alert" 
+           "*Appointment Alert*" ; use `nil` to not capture output; this captures output in background
+           notifier-path 
+           "-message" msg 
+           "-title" title 
+           "-sender" "org.gnu.Emacs"
+           "-activate" "org.gnu.Emacs"
+           "-sound" "Breeze")))
+(defun ct/appt-display-native (min-to-app new-time msg)
+  (ct/send-notification 
+    (format "%s" msg)
+    (format "in %s min" min-to-app)))
+
+;; Agenda-to-appointent hooks
+(org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
+(run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
+(add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
+#+end_src
+*** agenda speedup
+to speed up agenda building, here are some optimizations:
+#+begin_src emacs-lisp
+; not needed if we don't have org-enforce-todo-dependencies
+(setq org-agenda-dim-blocked-tasks nil)
+; Stop preparing agenda buffers on startup:
+(setq org-agenda-inhibit-startup t)
+; Disable tag inheritance for agendas:
+(setq org-agenda-use-tag-inheritance nil)
+(setq org-agenda-ignore-properties '(effort stats category appt))
+#+end_src
+*** org-transclusion
+#+begin_src emacs-lisp
+(use-package org-transclusion
+  :hook (org-mode . org-transclusion-add-all)
+  :straight
+  (:host github
+           :repo "nobiot/org-transclusion"
+           :branch "main"
+           :files ("*.el"))
+  :general
+  (dcao-local-leader-def
+   :keymaps 'org-mode-map
+   "t" 'org-transclusion-add
+   "T" 'org-transclusion-mode))
+#+end_src
+*** TODO Gathering clocks for subtasks
+Adapted from https://emacs.stackexchange.com/questions/41393/merging-clock-logs-together-in-org-mode
+#+begin_src emacs-lisp
+(defun org-collect-clock-entries (drawer &optional remove)
+  "Collect all clock entries from DRAWER.
+Remove them from DRAWER if REMOVE is non-nil."
+  (cl-assert (eq (org-element-type drawer) 'drawer)
+             nil
+             "Expected a drawer got %s" (org-element-type drawer))
+  (when (string-equal (org-element-property :drawer-name drawer)
+                      (or (org-log-into-drawer) "LOGBOOK"))
+    (let ((ret
+           (cl-loop
+            for element in-ref (org-element-contents drawer)
+            if (eq (org-element-type element) 'clock)
+            collect element
+            and if remove do (setf element nil))))
+      (org-element-set-contents
+       (cl-remove nil (org-element-contents drawer)))
+      ret)))
+
+(defun org-element-clock-start<= (c1 c2)
+  "Compare two clock elements as returned by `org-element-clock-parser'
+and return non-nil if the C1 starts not later than c2."
+  (setq c1 (org-element-property :value c1)
+        c2 (org-element-property :value c2))
+  (cl-loop with val1 with val2
+           for test in '(:year-start :month-start :day-start :hour-start :minute-start)
+           do (setq val1 (org-element-property test c1) val2 (org-element-property test c2))
+           if (< val1 val2)
+           return t
+           if (> val1 val2)
+           return nil
+           finally return t))
+
+(defun org-dblock-write:clocklist (params)
+  (save-restriction
+    (org-narrow-to-subtree)
+    (let* ((data (org-element-parse-buffer))
+           (clocks (apply #'append
+                            (org-element-map data 'drawer
+                              (lambda (el) (org-collect-clock-entries el t))))))
+      (setq clocks (sort clocks #'org-element-clock-start<=))
+      (print clocks)
+      (insert (org-element-interpret-data clocks)))))
+#+end_src
 ** HTML
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (setq sgml-basic-offset 4)
-#+END_SRC
+#+end_src
 ** LSP
-#+BEGIN_SRC emacs-lisp
+#+begin_src text
 (setq lsp-keymap-prefix "C-SPC m")
 
+(use-package project :straight (:local-repo nil))
+(defun project-root (project)
+    (car (project-roots project)))
+(use-package eglot
+  :general
+  (dcao-local-leader-def
+    :keymaps 'eglot-mode-map
+    "f" 'eglot-format
+    "r" 'xref-find-references
+    "d" 'xref-find-definitions)
+  :config
+  (setq eglot-confirm-server-initiated-edits nil)
+  (add-to-list 'eglot-server-programs '(elixir-mode "~/Downloads/elixir-ls-1.11/language_server.sh")))
+
+(defun +lsp--flycheck-eglot-init (checker callback)
+  "CHECKER is the checker (eglot).
+CALLBACK is the function that we need to call when we are done, on all the errors."
+  (cl-labels
+      ((flymake-diag->flycheck-err
+        (diag)
+        (with-current-buffer (flymake--diag-buffer diag)
+          (flycheck-error-new-at-pos
+           (flymake--diag-beg diag)
+           (pcase (flymake--diag-type diag)
+             ('eglot-note 'info)
+             ('eglot-warning 'warning)
+             ('eglot-error 'error)
+             (_ (error "Unknown diagnostic type, %S" diag)))
+           (flymake--diag-text diag)
+           :end-pos (flymake--diag-end diag)
+           :checker checker
+           :buffer (current-buffer)
+           :filename (buffer-file-name)))))
+    ;; NOTE: Setting up eglot to automatically create flycheck errors for the buffer.
+    ;; Internally, this sets the lambda as the callback to be used by eglot
+    ;; when it receives a publishDiagnostics method from the server
+    (eglot-flymake-backend
+     (lambda (flymake-diags &rest _)
+       (funcall callback
+                'finished
+                (mapcar #'flymake-diag->flycheck-err flymake-diags))))))
+
+(defun +lsp--flycheck-eglot-available-p ()
+  (bound-and-true-p eglot--managed-mode))
+
+(flycheck-define-generic-checker 'eglot
+  "Report `eglot' diagnostics using `flycheck'."
+  :start #'+lsp--flycheck-eglot-init
+  :predicate #'+lsp--flycheck-eglot-available-p
+  :modes '(prog-mode text-mode))
+
+(push 'eglot flycheck-checkers)
+
+(add-hook 'eglot-managed-mode-hook
+  (defun +lsp-eglot-prefer-flycheck-h ()
+    (when eglot--managed-mode
+      (when-let ((current-checker (flycheck-get-checker-for-buffer)))
+        (unless (equal current-checker 'eglot)
+          (flycheck-add-next-checker 'eglot current-checker)))
+      (flycheck-add-mode 'eglot major-mode)
+      (flycheck-mode 1))))
+
+;;; flycheck-eglot.el ends here
+(add-hook 'rust-mode-hook 'eglot-ensure)
 ; (use-package lsp-mode
 ;   :init
 ;   (add-hook 'rust-mode-hook #'lsp)
@@ -1969,28 +2319,37 @@ Making sure that monospaced parts are monospaced:
 ;     "" lsp-command-map))
 ; 
 ; ;; optionally
-; ; (use-package lsp-ui :commands lsp-ui-mode)
+; (use-package lsp-ui :commands lsp-ui-mode)
+; (use-package lsp-haskell)
 ; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
-#+END_SRC
+#+end_src
+#+begin_src emacs-lisp
+(setq lsp-keymap-prefix "C-SPC m")
+(use-package lsp-mode)
+(defun lsp-workspace-kill ()
+  (interactive)
+  (lsp-workspace-shutdown))
+(add-hook 'rust-mode-hook #'lsp)
+#+end_src
 ** Yaml
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package yaml-mode
   :mode (("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)))
-#+END_SRC
+#+end_src
 ** C
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (setq c-default-style "k&r"
       c-basic-offset 4)
 
 (use-package flycheck-pkg-config
   :commands (flycheck-pkg-config))
-#+END_SRC
+#+end_src
 ** Zig
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package zig-mode
   :mode (("\\.zig\\'" . zig-mode)))
-#+END_SRC
+#+end_src
 ** Ledger
 *** Beancount
 #+begin_src emacs-lisp
@@ -2002,16 +2361,183 @@ Making sure that monospaced parts are monospaced:
 #+begin_src emacs-lisp
 (use-package ledger-mode
   :mode ("\\.ldg\\'" . ledger-mode)
+  :general
+  (dcao-leader-def
+    "l" '(nil :which-key "ledger")
+    "l l" (lambda () (interactive) (find-file "~/default/ledger/spending.ldg")))
   :config
   (setq ledger-default-date-format ledger-iso-date-format))
+#+end_src
+** Julia
+#+begin_src emacs-lisp
+(use-package julia-mode
+  :mode (("\\.jl\\'" . julia-mode)))
+#+end_src
+** Elixir
+#+begin_src emacs-lisp
+(use-package elixir-mode)
 
-(dcao-leader-def
-  "l" '(nil :which-key "ledger")
-  "l l" (lambda () (interactive) (find-file "~/default/ledger/spending.ldg")))
+;; This is optional. It automatically runs `M-x eglot` for you whenever you are in `elixir-mode`
+(add-hook 'elixir-mode-hook 'eglot-ensure)
+
+#+end_src
+** APL-likes
+*** BQN
+bqn console stuff:
+#+begin_src emacs-lisp
+; (require 'comint)
+; 
+; ;; (defconst bqn-console-version "1.1.1"
+; ;;   "`bqn-console' version")
+; 
+; (defgroup bqn-console nil
+;   "REPL integration extention for `bqn-mode'"
+;   :group 'applications
+;   :group 'j
+;   :prefix "bqn-console-")
+; 
+; (defcustom bqn-console-cmd "/Users/David/Downloads/BQN/REPL"
+;   "Name of the executable used for the BQN REPL session"
+;   :type 'string
+;   :group 'bqn-console)
+; 
+; (defcustom bqn-console-cmd-args '()
+;   "Arguments to be passed to the bqn-console-cmd on start"
+;   :type 'string
+;   :group 'bqn-console)
+; 
+; (defcustom bqn-console-cmd-init-file nil
+;   "Full path to the file who's contents are sent to the
+;   bqn-console-cmd on start
+; Should be NIL if there is no file not the empty string"
+;   :type 'string
+;   :group 'bqn-console)
+; 
+; (defcustom bqn-console-cmd-buffer-name "BQN"
+;   "Name of the buffer which contains the bqn-console-cmd session"
+;   :type 'string
+;   :group 'bqn-console)
+; 
+; (defvar bqn-console-comint-input-filter-function nil
+;   "BQN mode specific mask for comint input filter function")
+; 
+; (defvar bqn-console-comint-output-filter-function nil
+;   "BQN mode specific mask for comint output filter function")
+; 
+; (defvar bqn-console-comint-preoutput-filter-function nil
+;   "BQN mode specific mask for comint preoutput filter function")
+; 
+; ;; 'comint-preoutput-filter-functions
+; ;; (lambda ( output )
+; ;;   (if (string-match "^[ \r\n\t]+" output)
+; ;;       (concat "  " (replace-match "" nil t output))
+; ;;     output))))
+; 
+; (defun bqn-console-create-session ()
+;   "Starts a comint session wrapped around the bqn-console-cmd"
+;   (setq comint-process-echoes t)
+;   (apply 'make-comint bqn-console-cmd-buffer-name
+;          bqn-console-cmd bqn-console-cmd-init-file bqn-console-cmd-args)
+;   (mapc
+;    (lambda ( comint-hook-sym)
+;      (let ((local-comint-hook-fn-sym
+;             (intern
+;              (replace-regexp-in-string
+;               "s$" "" (concat "bqn-console-" (symbol-name comint-hook-sym))))))
+;        (when (symbol-value local-comint-hook-fn-sym)
+;          (add-hook comint-hook-sym (symbol-value local-comint-hook-fn-sym)))))
+;    '(comint-input-filter-functions
+;      comint-output-filter-functions
+;      comint-preoutput-filter-functions)))
+; 
+; (defun bqn-console-ensure-session ()
+;   "Checks for a running bqn-console-cmd comint session and either
+;   returns it or starts a new session and returns that"
+;   (or (get-process bqn-console-cmd-buffer-name)
+;       (progn
+;         (bqn-console-create-session)
+;         (get-process bqn-console-cmd-buffer-name))))
+; 
+; (define-derived-mode inferior-bqn-mode comint-mode "Inferior BQN"
+;   "Major mode for BQN inferior process.")
+; 
+; ;;;###autoload
+; (defun bqn-console ()
+;   "Ensures a running bqn-console-cmd session and switches focus to
+; the containing buffer"
+;   (interactive)
+;   (switch-to-buffer-other-window (process-buffer (bqn-console-ensure-session)))
+;   (inferior-bqn-mode))
+; 
+; (defun bqn-console-execute-string (string)
+;   "Sends string to BQN console"
+;   (let ((session (bqn-console-ensure-session)))
+;     (with-current-buffer (process-buffer session)
+;       (goto-char (point-max))
+;       (insert-before-markers (concat string "\n")))
+;     (comint-simple-send (process-buffer session) string)))
+; 
+; (defun bqn-console-execute-region ( start end )
+;   "Sends current region to the bqn-console-cmd session and exectues it"
+;   (interactive "r")
+;   (when (= start end)
+;     (error "Region is empty"))
+;   (let ((region (buffer-substring-no-properties start end)))
+;     (bqn-console-execute-string region)))
+; 
+; (defun bqn-console-execute-line ()
+;   "Sends current line to the bqn-console-cmd session and exectues it"
+;   (interactive)
+;   (bqn-console-execute-region (point-at-bol) (point-at-eol)))
+; 
+; (defun bqn-console-execute-buffer ()
+;   "Sends current buffer to the bqn-console-cmd session and exectues it"
+;   (interactive)
+;   (bqn-console-execute-region (point-min) (point-max)))
+; 
+; (provide 'bqn-console)
+;;; bqn-console.el ends here
+#+end_src
+
+#+begin_src emacs-lisp
+; (use-package bqn-mode
+;   :general
+;   ("C-c C-s" 'bqn-console-execute-line
+;    "C-c C-r" 'bqn-console-execute-region)
+;   
+;   :straight (:host github :type git :repo "mlochbaum/BQN"
+;              :files ("editors/emacs/bqn-*.el"))
+; 
+;   :custom
+;   (bqn-mode-map-prefix "H-"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package bqn-mode
+  :straight (:host github :type git :repo "dcao/bqn-mode")
+
+  :custom
+  (bqn-mode-map-prefix "H-")
+  (bqn-interactive-cmd "/Users/David/Downloads/BQN/REPL"))
+#+end_src
+**** TODO Steal things from APL mode
+- [ ] =gnu-apl--make-base-mode-map=, which takes a prefix as an argument
+  - This is already done in the code, but
+  - We should fix H-SPC tho
+- [ ] Adapting this for use in the interpreter/comint mode (see =gnu-apl-interactive.el= and =make-interactive-mode-map= - they define their own custom major mode for APL comint terminals!)
+*** q
+#+begin_src emacs-lisp
+(use-package q-mode)
+#+end_src
+*** k
+#+begin_src emacs-lisp
+(use-package j-mode
+  :config
+  (setq j-console-cmd "jconsole"))
 #+end_src
 * Apps
 ** calfw
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package calfw
   :commands cfw:open-org-calendar
   :general
@@ -2019,9 +2545,9 @@ Making sure that monospaced parts are monospaced:
    "C" 'cfw:open-org-calendar)
   :config
   (use-package calfw-org))
-#+END_SRC
+#+end_src
 ** elfeed
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package elfeed
   :general
   (dcao-leader-def
@@ -2038,7 +2564,7 @@ Making sure that monospaced parts are monospaced:
     :config
     (elfeed-org)
     (setq rmh-elfeed-org-files (list (concat dcao/org-root "elfeed.org"))))
-#+END_SRC
+#+end_src
 ** Notetaking - pdf-tools + org-noter + helm-bibtex
 #+begin_src emacs-lisp
 (defun evil-collection-pdf-view-goto-page (&optional page)
@@ -2125,4 +2651,22 @@ Making sure that monospaced parts are monospaced:
   (setq bibtex-completion-bibliography (list (concat dcao/org-root "../papers/papers.bib"))
         bibtex-library-completion-path (list (concat dcao/org-root "../papers"))
         bibtex-completion-pdf-field "file"))
+#+end_src
+** deft
+#+begin_src emacs-lisp
+(use-package deft
+  :commands (deft)
+  :general
+  (dcao-leader-def
+   "j" #'(lambda () (interactive) (deft) (evil-emacs-state)))
+
+  :config
+  (setq deft-extensions '("md" "txt" "org"))
+  (setq deft-default-extension "md")
+  (setq deft-file-naming-rules
+      '((noslash . "-")
+        ; (nospace . "-")
+        (case-fn . downcase)))
+  (setq deft-use-filter-string-for-filename t)
+  (setq deft-directory dcao/org-journal))
 #+end_src
