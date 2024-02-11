@@ -1,8 +1,9 @@
 #+title: config.org
 #+subtitle: david's emacs config
 
+* About
+This is my fully literate emacs config.
 inspiration: https://github.com/angrybacon/dotemacs
-
 * Bootstrap
 ** Better defaults
 When we're running in GUI mode, we want to disable cursor blinking, the scroll bar, and the toolbar.
@@ -100,7 +101,7 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
 (delight '((subword-mode nil t)
            (eldoc-mode nil t)))
 #+end_src
-* Evil
+** Evil
 #+begin_src emacs-lisp
 (use-package undo-fu)
 
@@ -131,16 +132,12 @@ When we're running in GUI mode, we want to disable cursor blinking, the scroll b
   (evil-collection-init '(magit notmuch calendar dired pdf)))
 #+end_src
 *** Evil Fringe Mark
-To show marks in the left fringe of the editor.
+o show marks in the left fringe of the editor.
 #+begin_src emacs-lisp
 (use-package evil-fringe-mark
-  :delight global-evil-fringe-mark-mode
-  :config
-  (global-evil-fringe-mark-mode))
-#+end_src 
-*** evil-numbers
-#+begin_src emacs-lisp
-(use-package evil-numbers)
+ :delight global-evil-fringe-mark-mode
+ :config
+ (global-evil-fringe-mark-mode))
 #+end_src
 *** evil-surround
 #+begin_src emacs-lisp
@@ -158,68 +155,77 @@ To show marks in the left fringe of the editor.
 #+end_src
 *** Bind configuration
 #+begin_src emacs-lisp
-  (use-package general
-    :after evil
-    :init
-    (setq-default evil-undo-system 'undo-tree)
-    :config
-    (general-evil-setup t)
-    (general-unbind 'normal dcao/leader-key)
-    (general-unbind 'emacs dcao/leader-key)
-    (general-unbind dcao/leader-key-alt)
-    
-    (general-create-definer dcao-leader-def
-      :prefix dcao/leader-key-alt
-      :keymaps 'override)
-    (general-create-definer dcao-local-leader-def
-      :prefix dcao/local-leader-key-alt
-      :keymaps 'override)
-      
-    (general-def '(normal visual) "SPC" (general-simulate-key "C-SPC"))
+(use-package general
+  :after evil
+  :init
+  (setq-default evil-undo-system 'undo-tree)
+  :config
+  (general-evil-setup t)
+  (general-unbind 'normal dcao/leader-key)
+  (general-unbind 'emacs dcao/leader-key)
+  (general-unbind dcao/leader-key-alt)
+  
+  (general-create-definer dcao-leader-def
+    :prefix dcao/leader-key-alt
+    :keymaps 'override)
+  (general-create-definer dcao-local-leader-def
+    :prefix dcao/local-leader-key-alt
+    :keymaps 'override)
+  
+  (general-def '(normal visual) "SPC" (general-simulate-key "C-SPC"))
 
-    (general-def "<escape>" 'keyboard-escape-quit)
-    (general-def "C-w" 'backward-kill-word)
+  (general-def "<escape>" 'keyboard-escape-quit)
+  (general-def "C-w" 'backward-kill-word)
 
-    (general-def "M-w" 'kill-this-buffer)
-    (general-def "M-q" 'delete-window)
+  (general-def "M-w" 'kill-this-buffer)
+  (general-def "M-q" 'delete-window)
 
-    (general-def "M-P" 'execute-extended-command)
+  (general-def "M-P" 'execute-extended-command)
 
-    (general-def
-      :keymaps 'helm-map
-      "C-w" 'backward-kill-word)
+  (general-def "M-[" 'evil-jump-backward)
+  (general-def "M-]" 'evil-jump-forward)
 
-    (general-def "C-s" 'save-buffer)
+  (general-def
+    :keymaps 'helm-map
+    "C-w" 'backward-kill-word)
 
-    (general-def dcao/leader-key-alt (general-simulate-key dcao/leader-key))
+  (general-def "C-s" 'save-buffer)
 
-    (dcao-leader-def
-      ;; unbind SPC and give it a title for which-key (see echo area)
-      "" '(nil :which-key "universal leader")
-      "u" 'universal-argument
-      ;; bind nothing but give SPC f a description for which-key
-      "f" '(:ignore t :which-key "file")
-      ;; use a cons as a replacement
-      "g" '(:ignore t :which-key ("g-key" . "git"))
-      "x" '(:ignore t :which-key "meta")
-      "b k" 'kill-buffer
-      "b q" 'kill-this-buffer
-      "w q" 'delete-window
-      "w /" 'evil-window-vsplit
-      "w -" 'evil-window-split
-      "w h" 'evil-window-left
-      "w j" 'evil-window-down
-      "w k" 'evil-window-up
-      "w l" 'evil-window-right
-      "w n" 'make-frame-command
-      "x r" 'dcao/reload-config
-      "x q" 'save-buffers-kill-terminal
-      "c w" 'count-words
-      "c r" 'count-words-region)
+  (general-def dcao/leader-key-alt (general-simulate-key dcao/leader-key))
 
-    (general-define-key
-      :keymaps 'override
-      dcao/local-leader-key-alt '(nil :which-key "local leader")))
+  (dcao-leader-def
+    ;; unbind SPC and give it a title for which-key (see echo area)
+    "" '(nil :which-key "universal leader")
+    "u" 'universal-argument
+    ;; bind nothing but give SPC f a description for which-key
+    "f" '(:ignore t :which-key "file")
+    ;; use a cons as a replacement
+    "g" '(:ignore t :which-key ("g-key" . "git"))
+    "x" '(:ignore t :which-key "meta")
+    "b k" 'kill-buffer
+    "b q" 'kill-this-buffer
+    "w q" 'delete-window
+    "w /" 'evil-window-vsplit
+    "w -" 'evil-window-split
+    "w h" 'evil-window-left
+    "w j" 'evil-window-down
+    "w k" 'evil-window-up
+    "w l" 'evil-window-right
+    "w n" 'make-frame-command
+    "x r" 'dcao/reload-config
+    "x q" 'save-buffers-kill-terminal
+    "c w" 'count-words
+    "c r" 'count-words-region)
+
+  (general-define-key
+   :keymaps 'override
+   dcao/local-leader-key-alt '(nil :which-key "local leader")))
+#+end_src
+*** evil-numbers
+#+begin_src emacs-lisp
+(use-package evil-numbers
+  :general
+  ("C-a" 'evil-numbers/inc-at-pt))
 #+end_src
 ** buffer-move
 #+begin_src emacs-lisp
@@ -427,7 +433,8 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 (general-define-key "<A-M-right>" 'next-buffer
                     "<A-M-left>"  'previous-buffer)
 #+end_src
-* exwm
+* UI
+** exwm
 #+begin_src emacs-lisp
 (defun dcao/exwm-launch (command)
   (interactive)
@@ -657,7 +664,6 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 
   (exwm-init))
 #+end_src
-* UI
 ** Theme
 #+begin_src emacs-lisp
 (eval-and-compile
@@ -665,13 +671,19 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
     (expand-file-name "lisp" user-emacs-directory)))
 
 (setq
- dcao/default-font (font-spec :family "Iosevka Custom" :size 14)
- dcao/mono-font (font-spec :family "Iosevka Custom" :size 14)
+ dcao/default-font (font-spec :family "Iosevka Custom" :size 16)
+ dcao/mono-font (font-spec :family "Iosevka Custom" :size 16)
  dcao/variable-font (font-spec :family "iA Writer Quattro S" :size 14 :weight 'ultra-light))
 
 (set-face-attribute 'default nil :font dcao/default-font)
 (set-face-attribute 'fixed-pitch nil :font dcao/mono-font)
 (set-face-attribute 'variable-pitch nil :font dcao/variable-font)
+
+; (use-package nano-theme
+;   :straight (:type git :host github
+;              :repo "rougier/nano-theme")
+;   :config
+;   (load-theme 'nano-dark t))
 
 (use-package doom-themes
   :config
@@ -684,15 +696,33 @@ The Garbage Collector Magic Hack delays emacs' GC from collecting until idle.
 #+end_src
 
 #+begin_src emacs-lisp
+
 (use-package simple-modeline
   :hook (after-init . simple-modeline-mode)
   :config
   (setq simple-modeline-word-count-modes '()
-        simple-modeline-segments '((simple-modeline-segment-modified simple-modeline-segment-buffer-name simple-modeline-segment-position)
-                                   (simple-modeline-segment-input-method simple-modeline-segment-vc simple-modeline-segment-misc-info simple-modeline-segment-process simple-modeline-segment-major-mode))
-        ))
-#+end_src
+        simple-modeline-segments '((simple-modeline-segment-modified
+                                    simple-modeline-segment-buffer-name
+                                    simple-modeline-segment-position)
+                                   (simple-modeline-segment-input-method
+                                    simple-modeline-segment-vc
+                                    simple-modeline-segment-misc-info
+                                    simple-modeline-segment-process
+                                    simple-modeline-segment-major-mode)))
 
+  ; fix simple modeline format fn to work with olivetti
+  (defun simple-modeline--format (left-segments right-segments)
+    "Return a string of `window-width' length containing LEFT-SEGMENTS and RIGHT-SEGMENTS, aligned respectively."
+    (let* ((left (simple-modeline--format-segments left-segments))
+           (right (simple-modeline--format-segments right-segments))
+           (reserve (length right)))
+      (concat
+       left
+       (propertize " "
+                   'display `((space :align-to (- (+ right right-fringe right-margin) ,(+ reserve 1))))
+                   'face '(:inherit simple-modeline-space))
+       right))))
+#+end_src
 #+begin_src text
 ;; Workaround for https://github.com/seagle0128/doom-modeline/issues/358
 (defun doom-modeline--active ()
@@ -757,6 +787,7 @@ By default, this shows the information specified by `global-mode-string'."
   (setq shackle-default-alignment 'right
         shackle-default-size 0.35
         shackle-rules '(("\\`\\*helm.*?\\*\\'" :regexp t :align t :size 0.35)
+                        ("\\`\\*BQN.*?\\*\\'" :regexp t :align 'left :size 0.3)
                         ("\\`\\*org-roam.*?\\*\\'" :regexp t :align 'left :size 0.2)))
   (shackle-mode t))
 #+end_src
@@ -876,6 +907,21 @@ By default, this shows the information specified by `global-mode-string'."
   :init
   (selectrum-mode +1))
 
+(use-package prescient)
+(use-package selectrum-prescient
+  :init
+  (selectrum-prescient-mode))
+
+; (use-package vertico
+;   :init
+;   (savehist-mode t)
+;   (vertico-mode))
+; 
+; (use-package orderless
+;   :custom
+;   (completion-styles '(orderless basic))
+;   (completion-category-overrides '((file (styles basic partial-completion)))))
+
 (use-package marginalia
   :general
   (general-define-key
@@ -891,11 +937,6 @@ By default, this shows the information specified by `global-mode-string'."
   (advice-add #'marginalia-cycle :after
               (lambda () (when (bound-and-true-p selectrum-mode) (selectrum-exhibit)))))
 
-(use-package prescient)
-(use-package selectrum-prescient
-  :init
-  (selectrum-prescient-mode))
-
 (use-package embark
   :ensure t
   :bind
@@ -908,6 +949,7 @@ By default, this shows the information specified by `global-mode-string'."
   :general
   (general-define-key
    "M-x" 'execute-extended-command
+   "M-r" (lambda () (interactive) (consult-ripgrep dcao/org-root))
    "C-x f" 'consult-recent-file
    "C-x b" 'consult-buffer)
   (dcao-leader-def
@@ -915,7 +957,7 @@ By default, this shows the information specified by `global-mode-string'."
     "f f" 'find-file
     "f r" 'consult-recent-file
     "b b" 'consult-buffer
-    "o s" (lambda () (interactive) (consult-ripgrep dcao/org-root))))
+    "o r" (lambda () (interactive) (consult-ripgrep dcao/org-root))))
                                         ; "p s r" (lambda () (interactive) (consult-ripgrep (projectile-project-root)))))
 
 (use-package ripgrep)
@@ -932,15 +974,15 @@ By default, this shows the information specified by `global-mode-string'."
 
 ;; miniframe - to get vscode/sublime-style pop-over for
 ;; M-x and projectile-find-file
-(use-package mini-frame
-  :config
-  (custom-set-variables
-   '(mini-frame-show-parameters
-     '((top . 40)
-       (width . 80)
-       (left . 0.5))))
-
-  (mini-frame-mode))
+; (use-package mini-frame
+;   :config
+;   (custom-set-variables
+;    '(mini-frame-show-parameters
+;      '((top . 40)
+;        (width . 80)
+;        (left . 0.5))))
+; 
+;   (mini-frame-mode))
 #+end_src
 ** Company
 #+begin_src emacs-lisp
@@ -1132,6 +1174,10 @@ Adding a keybind to show git info:
   (use-package sly-macrostep)
   (setq inferior-lisp-program "sbcl"))
 #+end_src
+*** Racket
+#+begin_src emacs-lisp
+(use-package racket-mode)
+#+end_src
 ** LaTeX
 #+begin_src emacs-lisp
 ; (use-package tex-mode
@@ -1142,7 +1188,7 @@ Adding a keybind to show git info:
 ** Org
 *** Basic config
 #+begin_src emacs-lisp
-(defvar dcao/org-root (concat (getenv "HOME") "/Dropbox/org/"))
+(defvar dcao/org-root (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/"))
 (defvar dcao/org-journal (concat dcao/org-root "j/"))
 (defvar dcao/org-inbox-template "* TODO %^{Task}
 :PROPERTIES:
@@ -1150,10 +1196,19 @@ Adding a keybind to show git info:
 :END:
 %i")
 
-(setq-default org-startup-folded 'content)
+(setq org-startup-folded 'show2levels)
+
+(defun dcao/include-dir-p (name)
+  (not (string-match "archive" name)))
+
+(setq org-show-context-detail
+      '((agenda . tree)
+        (bookmark-jump . lineage)
+        (isearch . lineage)
+        (default . tree)))
 
 (setq org-directory dcao/org-root
-      org-agenda-files `(,dcao/org-root)
+      org-agenda-files (directory-files-recursively dcao/org-root "\\.org$" nil #'dcao/include-dir-p)
       org-archive-location (concat dcao/org-root "archive/%s::")
       org-agenda-span 7
       org-agenda-start-on-weekday nil
@@ -1179,7 +1234,7 @@ Adding a keybind to show git info:
       org-outline-path-complete-in-steps nil
       org-refile-allow-creating-parent-nodes 'confirm
       ;; contacts
-      org-contacts-files `(,(concat dcao/org-root "people.org"))
+      org-contacts-files `(,(concat dcao/org-root "ppl.org"))
       ;; capture
       org-capture-templates
       `(("t" "inbox todo" entry (file+olp ,(concat dcao/org-root "index.org") "miscellany")
@@ -1196,7 +1251,7 @@ I want to have a line above every day in the agenda. This does that:
 *** todo keywords
 #+begin_src emacs-lisp
 (setq org-todo-keywords
-      '((sequence "TODO" "NEXT" "|" "DONE")))
+      '((sequence "TODO" "|" "DONE" "CANCELLED")))
 #+end_src
 *** Fix newline/indent in src blocks
 #+begin_src emacs-lisp
@@ -1410,12 +1465,21 @@ If on a:
 
 (defun dcao/org/dwim-daily ()
   (interactive)
-  (find-file (concat dcao/org-root "inbox.org"))
+  (find-file (concat dcao/org-root "journal.org"))
   (goto-char (point-min))
-  (let* ((tstr (format-time-string "%F"))
-         (p (re-search-forward (concat "* " (format-time-string "%F")) nil 'past)))
+  (let* ((tstr (format-time-string "%F %a"))
+         (p (re-search-forward (concat "* " tstr " <" tstr ">") nil 'past)))
     (unless p
-      (insert (concat "\n* " tstr)))))
+      (insert (concat "\n* " tstr " <" tstr ">")))
+    (org-id-get-create)
+    ;(unless p
+    ;  (org-end-of-subtree)
+    ;  (insert (concat "\n<" (format-time-string "%F %a") ">\n")))
+    (org-narrow-to-subtree)
+    (org-end-of-subtree)))
+
+; open daily note on startup
+(dcao/org/dwim-daily)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1499,9 +1563,14 @@ If on a:
   (org-update-all-dblocks)
   (let ((current-prefix-arg '(4))) (call-interactively 'org-update-statistics-cookies)))
 
-(use-package org-plus-contrib
+(use-package org
+  :straight org-plus-contrib
   :hook (org-mode . org-indent-mode)
   :general
+  (general-def
+   "M-d" 'dcao/org/dwim-daily
+   "C-S-j" 'org-move-subtree-down
+   "C-S-k" 'org-move-subtree-up)
   (dcao-leader-def
    "o" '(:ignore t :which-key "org")
    "a" 'org-agenda
@@ -1512,9 +1581,13 @@ If on a:
    "<C-tab>" 'org-show-current-heading-tidily
    "M-h" nil
    "M-e" 'dcao/org-update-all
-   "M-d" 'dcao/org/dwim-daily
+   "M-l" 'org-insert-link
    "<C-M-right>" 'org-narrow-to-subtree
    "<C-M-left>" 'widen)
+  (general-def
+   :keymaps 'org-mode-map
+   "C-M-l" 'org-narrow-to-subtree
+   "C-M-h" 'widen)
   (:states 'normal
    :keymaps 'org-mode-map
    [return] 'dcao/org/dwim-at-point
@@ -1525,15 +1598,20 @@ If on a:
    "RET" 'org-return-indent)
   (dcao-local-leader-def
    :keymaps 'org-mode-map
+   "*" 'org-list-make-subtree
    "a" 'org-archive-subtree
+   "b" 'org-cycle-list-bullet
+   "B" 'org-tree-to-indirect-buffer
    "d" 'org-update-all-dblocks
    "e" 'org-expiry-insert-created
    "r" 'org-refile
    "n" 'org-narrow-to-subtree
    "s" 'org-schedule
+   "S" 'org-clone-subtree-with-time-shift
    "w" 'widen
    "x" 'org-export-dispatch
    "m" 'org-time-stamp
+   "M" 'org-time-stamp-inactive
    "p" 'org-set-property
    "c" '(:ignore t :which-key "clock")
    "c i" 'org-clock-in
@@ -1589,6 +1667,46 @@ Add this function to `org-mode-hook'."
 
 ; doesn't work for now?
 ; (add-hook 'org-mode-hook #'org-setup-<>-syntax-fix)
+#+end_src
+*** org-agenda whiteboard
+#+begin_src emacs-lisp
+(defun dcao/temp ()
+  (interactive) 
+  (goto-char (point-min))
+  (while (string-match "^[# ]" (buffer-substring-no-properties (line-beginning-position) (line-end-position))) (next-line)))
+
+  (setq-default dcao/whiteboard-file (concat dcao/org-root "inbox.org"))
+  (defun dcao/show-whiteboard-in-agenda ()
+    "Insert contents of `dcao/whiteboard-file` into agenda buffer."
+    (interactive)
+    (unless (buffer-narrowed-p)
+      (goto-char (point-min))
+      (while (and (eq (get-text-property (line-beginning-position) 'org-agenda-type) 'agenda)
+                  (not (eobp)))
+        (forward-line))
+      (forward-line)
+      (let* ((inhibit-read-only t)
+             (buf-text (with-temp-buffer
+                         (insert-file-contents dcao/whiteboard-file)
+                         (org-mode)
+                         (font-lock-ensure (point-min) (point-max))
+                         (let* ((max (progn
+                                       (goto-char (point-max))
+                                       (skip-chars-backward "\n[:space:]")
+                                       (point)))
+                                (min (progn
+                                       (goto-char (point-min))
+                                       (next-line 4)
+                                       (point))))
+                           (buffer-substring min max)))))
+        (goto-char (point-min)) ; insert at start
+        (insert (propertize "dcao/show-whiteboard-in-agenda (inbox.org):\n" 'face 'italic))
+        (insert buf-text)
+        (insert "\n\n"))
+      ;; enable `font-lock-mode' in agenda view to enable formatting
+      (font-lock-mode)))
+
+  (add-hook 'org-agenda-finalize-hook 'dcao/show-whiteboard-in-agenda :append)
 #+end_src
 *** org-timeline
 This is the code for org-timeline from https://github.com/deopurkar/org-timeline.
@@ -1725,7 +1843,7 @@ Return new copy of STRING."
 
 (defun org-timeline--generate-timeline ()
   "Generate the timeline string that will represent current agenda view."
-  (let* ((start-offset 260) ; offset of calendar. a start offset of 60 sets the beginning to 00:00. Each increment of 10 corresponds to an extra 15 minutes.
+  (let* ((start-offset 315) ; offset of calendar in minutes. a start offset of 15 sets the beginning to 00:00.
          (current-time (+ (* 60 (string-to-number (format-time-string "%H")))
                           (string-to-number (format-time-string "%M"))))
          (current-offset (/ (- current-time start-offset) 10))
@@ -1733,7 +1851,7 @@ Return new copy of STRING."
                     "|     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |     |"
                     current-offset))
          (hourline (org-timeline--add-elapsed-face
-                    "   |05:00|06:00|07:00|08:00|09:00|10:00|11:00|12:00|13:00|14:00|15:00|16:00|17:00|18:00|19:00|20:00|21:00|22:00|23:00|00:00|01:00|02:00|03:00|04:00|"
+                    "   |06:00|07:00|08:00|09:00|10:00|11:00|12:00|13:00|14:00|15:00|16:00|17:00|18:00|19:00|20:00|21:00|22:00|23:00|00:00|01:00|02:00|03:00|04:00|05:00|"
                     current-offset))
          (tasks nil))
     (org-timeline-with-each-line
@@ -1886,8 +2004,7 @@ If OTHERS is true, skip all entries that do not correspond to TAG."
 
 (setq org-agenda-custom-commands
       '(("a" "dcao view"
-         ((todo "NEXT")
-          (agenda "" ((org-agenda-span 'week)
+         ((agenda "" ((org-agenda-span 'week)
                       (org-agenda-skip-function '(zin/org-agenda-skip-tag "lec")))))
          ((org-use-tag-inheritance nil)))
         ("l" "lectures"
@@ -1962,14 +2079,16 @@ This is a `completion-at-point' function, and is active when
     "o b" 'org-roam-buffer-toggle
     "o i" 'org-roam-node-insert
     "o d" 'org-roam-node-find
+    "o R" 'org-roam-db-sync
     "d" 'org-roam-node-find
     "o g" 'org-roam-graph)
   (dcao-local-leader-def
+    :keymaps 'org-mode-map
     "i" 'org-id-get-create)
 
   :config
   (setq org-roam-capture-templates '(("d" "default" plain "%?"
-     :if-new (file+head "${slug}.org"
+     :target (file+head "notes/%<%Y%m%d%H%M%S>-${slug}.org"
                         "#+title: ${title}\n")
      :unnarrowed t)))
   (setq org-roam-completion-everywhere t
@@ -1982,6 +2101,57 @@ This is a `completion-at-point' function, and is active when
 ; So that agenda picks up on these txt files
 (setq org-agenda-file-regexp "\\`[^.].*\\(\\.org\\|\\.txt\\)\\'")
 #+end_src
+**** org-roam-ui
+#+begin_src emacs-lisp
+(use-package org-roam-ui
+  :straight (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
+  ; normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ; a hookable mode anymore, you're advised to pick something yourself
+  ; if you don't care about startup time, use
+  ; :hook (after-init . org-roam-ui-mode)
+  :general
+  (general-def
+   "M-B" 'org-roam-ui-open)
+  (dcao-leader-def
+   "o B" 'org-roam-ui-open)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start nil))
+#+end_src
+**** fixing titles in agenda
+org agenda uses the =category= property of a file to set the filename that it shows. i just want it to use the =title= property. so i set the function which gets the category to just get the title :^)
+
+#+begin_src emacs-lisp
+; (defun org-get-category (&optional pos force-refresh)
+;   (org-roam-db--file-title))
+
+; (defun org-get-category (&optional pos force-refresh)
+;   (or (assoc "CATEGORY" (org-entry-properties))
+;       (org-roam-db--file-title)))
+
+(defun org-get-category (&optional pos force-refresh)
+  "Get the category applying to position POS."
+  (save-match-data
+    (when force-refresh (org-refresh-category-properties))
+    (let ((pos (or pos (point))))
+      (if (org-element--cache-active-p)
+          ;; Sync cache.
+          (org-with-point-at (org-element-property :begin (org-element-at-point pos))
+            (or (org-entry-get-with-inheritance "CATEGORY")
+                "???"))
+        (or (org-entry-get-with-inheritance "CATEGORY")
+            (org-roam-db--file-title))))))
+
+#+end_src
+**** show correct context on opening node
+when we open a node, we want to see the tree context regardless of if the file was opened previously or not!
+
+#+begin_src emacs-lisp
+(advice-add 'org-roam-node-visit :after (lambda (node &optional other-window force) (interactive) (org-show-context)))
+#+end_src
 *** org-krita
 #+begin_src emacs-lisp
 (use-package arc-mode)
@@ -1993,6 +2163,24 @@ This is a `completion-at-point' function, and is active when
     "k" 'org-krita-insert-new-image)
   :config
   (add-hook 'org-mode-hook 'org-krita-mode))
+#+end_src
+*** org-hyperscheduler
+#+begin_src emacs-lisp
+(use-package org-hyperscheduler
+  :straight
+  (:repo "dmitrym0/org-hyperscheduler"
+   :host github
+   :type git
+   :files ("*"))
+  :general
+  (dcao-leader-def
+   "A" 'org-hyperscheduler-open
+   "o a" '(:ignore t :which-key "org-hyperscheduler")
+   "o a a" 'org-hyperscheduler-open
+   "o a s" 'org-hyperscheduler-stop-server)
+
+  :config
+  (setq org-hyperscheduler-readonly-mode nil))
 #+end_src
 *** Focus
 **** org-superstar
@@ -2060,7 +2248,8 @@ Making sure that monospaced parts are monospaced:
   (markdown-mode . olivetti-mode)
   :commands olivetti-mode
   :config
-  (setq-default olivetti-body-width 82)
+  ; (setq-default olivetti-body-width 96)
+  (setq-default olivetti-body-width 84)
   (setq-default olivetti-minimum-body-width 40))
 #+end_src
 **** focus mode
@@ -2105,7 +2294,7 @@ Making sure that monospaced parts are monospaced:
     (push '("#+author: "       . "- ") prettify-symbols-alist)
     (push '(":properties:"     . "⋯") prettify-symbols-alist)
     (push '(":PROPERTIES:"     . "⋯") prettify-symbols-alist)
-    (push '(":LOGBOOK:"     . "⧖") prettify-symbols-alist)
+    (push '(":LOGBOOK:"        . "⧖") prettify-symbols-alist)
     (push '("#+begin_src"      . "λ") prettify-symbols-alist)
     (push '("#+end_src"        . "⋯") prettify-symbols-alist)
     (push '("#+results:"       . "»") prettify-symbols-alist)
@@ -2117,7 +2306,7 @@ Making sure that monospaced parts are monospaced:
     (push '("#+end_example"    . "⋯") prettify-symbols-alist)
     (push '("#+begin_quote"    . "𐄚") prettify-symbols-alist)
     (push '("#+end_quote"      . "𐄚") prettify-symbols-alist)
-    (push '("#+tblfm:"         . "∫") prettify-symbols-alist)
+    (push '("#+tblfm:"         . "Σ") prettify-symbols-alist)
     (push '("\\\\"             . "↩") prettify-symbols-alist)
     (prettify-symbols-mode t))
 
@@ -2131,7 +2320,7 @@ Making sure that monospaced parts are monospaced:
 (setq appt-time-msg-list nil)    ;; clear existing appt list
 (setq appt-display-interval '10)
 (setq
-  appt-message-warning-time '10  ;; send first warning 15 minutes before appointment
+  appt-message-warning-time '10  ;; send first warning 10 minutes before appointment
   appt-display-mode-line nil     ;; don't show in the modeline
   appt-display-format 'window)   ;; pass warnings to the designated window function
 (setq appt-disp-window-function (function ct/appt-display-native))
@@ -2183,8 +2372,10 @@ to speed up agenda building, here are some optimizations:
   :general
   (dcao-local-leader-def
    :keymaps 'org-mode-map
-   "t" 'org-transclusion-add
-   "T" 'org-transclusion-mode))
+   "t" '(:ignore t :which-key "transclusion")
+   "t t" 'org-transclusion-make-from-link
+   "t e" 'org-transclusion-live-sync-start
+   "t T" 'org-transclusion-mode))
 #+end_src
 *** TODO Gathering clocks for subtasks
 Adapted from https://emacs.stackexchange.com/questions/41393/merging-clock-logs-together-in-org-mode
@@ -2231,6 +2422,58 @@ and return non-nil if the C1 starts not later than c2."
       (setq clocks (sort clocks #'org-element-clock-start<=))
       (print clocks)
       (insert (org-element-interpret-data clocks)))))
+#+end_src
+*** Set calendar location
+This is so that we can show sunrise/sunset times in the agenda via the =S= command
+
+#+begin_src emacs-lisp
+(setq calendar-latitude 32.87232209452121)
+(setq calendar-longitude -117.20323107791246)
+(setq calendar-location-name "La Jolla, CA")
+#+end_src
+*** latex export template
+#+begin_src prog
+(add-to-list 'org-latex-classes
+             '("tufte"
+               "\\documentclass{tufte-handout}
+\\usepackage[utf8]{inputenc}
+\\usepackage[shortlabels]{enumitem}
+\\usepackage{amsmath}
+\\newcommand{\\Mod}[1]{\\ \\mathrm{mod}\\ #1}
+\\usepackage{amssymb,amsthm}
+\\usepackage{hyperref}
+\\usepackage[super]{nth}
+\\usepackage{booktabs}
+\\usepackage{siunitx}
+\\usepackage{circuitikz}
+\\usepackage{qtree}
+\\usepackage{xcolor}
+\\usepackage{soul}
+\\usepackage{forest}
+\\usepackage{cleveref}
+\\usepackage{microtype}
+
+\\usepackage[T1]{fontenc}
+\\usepackage{ETbb}
+\\let\\oldstylenums\\textosf
+
+\\newcommand*{\\permcomb}[4][0mu]{{{}^{#3}\\mkern#1#2_{#4}}}
+\\newcommand*{\\perm}[1][-3mu]{\\permcomb[#1]{P}}
+\\newcommand*{\\ans}[1]{\\colorbox{GreenYellow}{#1}}
+
+\\newcommand{\\todo}[1]{{\\color{orange!80!black}[\\textsl{#1}]}}
+\\newcommand{\\mtodo}[1]{{\\marginnote{\\todo{#1}}}}
+
+\\newcommand{\\NA}{---}
+\\newcommand{\\babble}{\\smallcaps{babble}}"
+               ("\\chapter{%s}" . "\\chapter*{%s}")
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+(setq org-latex-default-class "tufte")
 #+end_src
 ** HTML
 #+begin_src emacs-lisp
@@ -2331,6 +2574,7 @@ CALLBACK is the function that we need to call when we are done, on all the error
   (lsp-workspace-shutdown))
 (add-hook 'rust-mode-hook #'lsp)
 #+end_src
+
 ** Yaml
 #+begin_src emacs-lisp
 (use-package yaml-mode
@@ -2381,7 +2625,7 @@ CALLBACK is the function that we need to call when we are done, on all the error
 (add-hook 'elixir-mode-hook 'eglot-ensure)
 
 #+end_src
-** APL-likes
+** Array langs
 *** BQN
 bqn console stuff:
 #+begin_src emacs-lisp
@@ -2513,12 +2757,31 @@ bqn console stuff:
 #+end_src
 
 #+begin_src emacs-lisp
+;; Use Iosevka in BQN mode since it gives each symbol the correct width
+(setq-default buffer-face-mode-face '(:family "Iosevka Custom"))
+(defun dcao/bqn-mode-font ()
+  "Sets a fixed width (monospace) font in current buffer"
+  (interactive)
+  (buffer-face-mode))
+
 (use-package bqn-mode
   :straight (:host github :type git :repo "dcao/bqn-mode")
-
+  :general
+  (dcao-leader-def
+   "c c" (lambda () (interactive) (find-file "/Users/David/Downloads/scratch.bqn"))
+   "c C" 'calc)
+  (dcao-local-leader-def
+   :keymaps 'bqn-mode-map
+   "z" 'bqn-switch-to-interactive
+   "s" 'bqn-interactive-send-region
+   "l" 'bqn-interactive-send-buffer
+   "c" 'bqn-interactive-send-line)
   :custom
-  (bqn-mode-map-prefix "H-")
-  (bqn-interactive-cmd "/Users/David/Downloads/BQN/REPL"))
+  (bqn-mode-map-prefix "\\ ")
+  (bqn-interactive-cmd "/Users/David/Downloads/CBQN/BQN")
+  :config
+  (add-hook 'bqn-mode-hook #'dcao/bqn-mode-font))
+
 #+end_src
 **** TODO Steal things from APL mode
 - [ ] =gnu-apl--make-base-mode-map=, which takes a prefix as an argument
